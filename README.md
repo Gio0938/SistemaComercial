@@ -101,7 +101,7 @@
 ### Pasos
 
 ```bash
-git clone https://github.com/tu-usuario/gestion-comercial.git
+git clone https://github.com/Gio0938/gestion-comercial.git
 cd gestion-comercial
 composer install
 npm install
@@ -288,8 +288,8 @@ Licencia **MIT**
 
 ## 📞 Contacto y Soporte
 
-* **Autor**: [Tu Nombre]
-* **GitHub**: [https://github.com/tu-usuario](https://github.com/tu-usuario)
+* **Autor**: Gio0938
+* **GitHub**: [https://github.com/Gio0938](https://github.com/Gio0938)
 * **Email**: [tu-email@empresa.com](mailto:tu-email@empresa.com)
 
 ---
