@@ -1,59 +1,307 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚀 Sistema de Gestión Comercial - Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-10-red)
+![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-En%20Desarrollo-yellow)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🎥 Demo / Capturas
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> 📸 **Screenshots / GIFs del sistema**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+![Dashboard](docs/screenshots/dashboard.png)
+![Servicios](docs/screenshots/servicios.png)
+![Productos](docs/screenshots/productos.png)
+![Promociones](docs/screenshots/promociones.png)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 📑 Tabla de Contenidos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* [Características](#-características-principales)
+* [Tecnologías](#-stack-tecnológico)
+* [Instalación](#-instalación-local)
+* [Configuración](#️-configuración-del-sistema)
+* [Uso](#-guía-de-uso)
+* [API](#-endpoints-api)
+* [Estructura](#-estructura-de-archivos)
+* [Base de Datos](#-esquema-de-base-de-datos)
+* [Testing](#-testing-y-calidad)
+* [Despliegue](#-despliegue-en-producción)
+* [Seguridad](#-mejores-prácticas-de-seguridad)
+* [Contribución](#-guía-de-contribución)
+* [Licencia](#-licencia)
+* [Contacto](#-contacto-y-soporte)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## ✨ Características Principales
 
-### Premium Partners
+### 🛠️ Módulos del Sistema
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+* ✅ **Gestión de Servicios** (Interno, Externo, Domicilio, Online)
+* ✅ **Control de Productos** con inventario, stock y marcas
+* ✅ **Sistema de Promociones** con reglas y fechas
+* ✅ **Dashboard Avanzado** con métricas en tiempo real
+* ✅ **Reportes Exportables** (PDF / Excel)
+* ✅ **Página Pública** tipo catálogo
+* ✅ **Gestión de Usuarios** con roles y permisos
 
-## Contributing
+### 🎨 Interfaz de Usuario
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+* Bootstrap 5 moderno y responsive
+* Checkboxes interactivos de estado
+* Subida de imágenes con vista previa
+* Tablas con búsqueda y paginación
+* Notificaciones y modales
+* Validación de formularios en tiempo real
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🛠️ Stack Tecnológico
 
-## Security Vulnerabilities
+### Backend
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+* **Laravel 10**
+* **PHP 8.1+**
+* **MySQL 8.0**
+* **Eloquent ORM**
+* **Blade**
+* **Laravel DomPDF**
 
-## License
+### Frontend
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+* **Bootstrap 5.3**
+* **FontAwesome 6**
+* **JavaScript Vanilla**
+* **CSS3**
+
+### Herramientas
+
+* Composer
+* NPM
+* Git
+* PHPUnit
+
+---
+
+## 🚀 Instalación Local
+
+### Requisitos
+
+* PHP >= 8.1
+* Composer
+* MySQL 8.0
+* Node.js 18+
+* Git
+
+### Pasos
+
+```bash
+git clone https://github.com/tu-usuario/gestion-comercial.git
+cd gestion-comercial
+composer install
+npm install
+npm run build
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+php artisan serve
+```
+
+📍 Acceso: `http://localhost:8000`
+
+👤 **Admin demo**
+
+* Email: [admin@empresa.com](mailto:admin@empresa.com)
+* Password: password
+
+---
+
+## ⚙️ Configuración del Sistema
+
+```env
+APP_NAME="Gestión Comercial"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gestion_comercial
+DB_USERNAME=root
+DB_PASSWORD=
+
+FILESYSTEM_DISK=public
+```
+
+```bash
+mkdir -p storage/app/public/{servicios,productos,usuarios}
+chmod -R 775 storage bootstrap/cache
+```
+
+---
+
+## 📚 Guía de Uso
+
+### Panel Admin
+
+1. Login
+2. Dashboard
+3. Servicios
+4. Productos
+5. Promociones
+6. Reportes
+
+### Roles
+
+* **Admin**: acceso total
+* **Empleado**: gestión limitada
+* **Cliente**: solo catálogo
+
+---
+
+## 📁 Estructura de Archivos
+
+```text
+gestion-comercial/
+├── app/
+│   ├── Http/Controllers/
+│   ├── Models/
+├── database/
+│   ├── migrations/
+│   ├── seeders/
+├── resources/
+│   ├── views/
+│   └── lang/
+├── routes/
+├── storage/
+├── public/
+└── tests/
+```
+
+### Ejemplo Modelo
+
+```php
+class Servicio extends Model
+{
+    protected $table = 'servicios';
+    protected $primaryKey = 'idserv';
+
+    public function promociones()
+    {
+        return $this->hasMany(Promocion::class);
+    }
+}
+```
+
+---
+
+## 🗄️ Esquema de Base de Datos
+
+```sql
+CREATE TABLE servicios (
+  idserv INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(255),
+  precio DECIMAL(10,2),
+  tipo_servicio ENUM('Interno','Externo','Domicilio','Online'),
+  disponible BOOLEAN
+);
+```
+
+Relaciones:
+
+```
+Servicios ──┐
+            ├── Promociones
+Productos ──┘
+Usuarios ────┘
+```
+
+---
+
+## 🔌 Endpoints API
+
+```http
+POST /api/login
+GET  /api/servicios
+POST /api/servicios
+GET  /api/productos
+```
+
+---
+
+## 🧪 Testing y Calidad
+
+```bash
+php artisan test
+php artisan test --testsuite=Feature
+```
+
+---
+
+## 🚀 Despliegue en Producción
+
+* Ubuntu 22.04
+* Nginx
+* PHP-FPM 8.2
+* MySQL 8
+* Redis
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+---
+
+## 🔒 Mejores Prácticas de Seguridad
+
+* Autenticación segura
+* CSRF Protection
+* Validaciones
+* XSS / SQL Injection protection
+* Rate limiting
+
+---
+
+## 🤝 Guía de Contribución
+
+1. Fork
+2. Feature branch
+3. Commit
+4. Pull Request
+
+---
+
+## 📄 Licencia
+
+Licencia **MIT**
+
+---
+
+## 📞 Contacto y Soporte
+
+* **Autor**: [Tu Nombre]
+* **GitHub**: [https://github.com/tu-usuario](https://github.com/tu-usuario)
+* **Email**: [tu-email@empresa.com](mailto:tu-email@empresa.com)
+
+---
+
+## 🙏 Agradecimientos
+
+* Laravel Community
+* Bootstrap Team
+* Contribuidores
+
+---
+
+⭐ **Si este proyecto te fue útil, dale una estrella en GitHub**
+
+[![Star History Chart](https://api.star-history.com/svg?repos=tu-usuario/gestion-comercial\&type=Date)](https://star-history.com/#tu-usuario/gestion-comercial&Date)
