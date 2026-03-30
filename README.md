@@ -12,10 +12,10 @@
 
 > 📸 **Screenshots / GIFs del sistema**
 
-![Dashboard](docs/screenshots/dashboard.png)
-![Servicios](docs/screenshots/servicios.png)
-![Productos](docs/screenshots/productos.png)
-![Promociones](docs/screenshots/promociones.png)
+![Dashboard](doc/screenshot/Dashboard.png)
+![Servicios](doc/screenshot/Servicios.png)
+![Productos](doc/screenshot/Productos.png)
+![Promociones](doc/screenshot/Promociones.png)
 
 ---
 
