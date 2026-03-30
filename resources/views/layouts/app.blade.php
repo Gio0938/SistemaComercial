@@ -123,7 +123,25 @@
                         </a>
                     </li>
                 </ul>
+                <!-- En resources/views/layouts/app.blade.php - Agregar después de Promociones -->
 
+                <!-- En el sidebar, donde está el menú -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('ventas/pos*') ? 'active' : '' }}"
+                       href="{{ route('ventas.pos') }}">
+                        <i class="fas fa-shopping-cart me-2"></i>Punto de Venta
+                    </a>
+                </li>
+
+                <!-- Solo mostrar Historial si el usuario es ADMIN -->
+                @if(Auth::check() && Auth::user()->esAdmin())
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('ventas/historial*') ? 'active' : '' }}"
+                           href="{{ route('ventas.historial') }}">
+                            <i class="fas fa-history me-2"></i>Historial de Ventas
+                        </a>
+                    </li>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="btn btn-danger w-100 mt-3">

@@ -26,10 +26,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-   /* public function esAdmin()
-    {
-        return $this->rol === 'admin';
-    }*/
+    /* public function esAdmin()
+     {
+         return $this->rol === 'admin';
+     }*/
 
     public function esAdmin()
     {
