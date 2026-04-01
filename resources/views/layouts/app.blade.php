@@ -125,6 +125,12 @@
                 </ul>
                 <!-- En resources/views/layouts/app.blade.php - Agregar después de Promociones -->
 
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('ordenes*') ? 'active' : '' }}" href="{{ route('ordenes.index') }}">
+                        <i class="fas fa-clipboard-list me-2"></i>Gestión de Servicios
+                    </a>
+                </li>
+
                 <!-- ========== BOTÓN DE REPORTES ========== -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}" href="{{ route('reportes.index') }}">

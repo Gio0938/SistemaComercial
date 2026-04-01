@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\OrdenServicioController;
 
 // ==================== RUTAS PÚBLICAS (PÁGINA WEB) ====================
 // Usamos /tienda para evitar conflicto con el CRUD
@@ -58,4 +59,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/reportes/ventas/pdf', [ReporteController::class, 'exportarVentasPDF'])->name('reportes.exportar-ventas-pdf');
     Route::get('/reportes/servicios/pdf', [ReporteController::class, 'exportarServiciosPDF'])->name('reportes.exportar-servicios-pdf');
     Route::get('/reportes/promociones/pdf', [ReporteController::class, 'exportarPromocionesPDF'])->name('reportes.exportar-promociones-pdf');
+
+// Órdenes de Servicio
+    Route::resource('ordenes', OrdenServicioController::class);
+    Route::get('/mis-ordenes', [OrdenServicioController::class, 'misOrdenes'])->name('ordenes.mis-ordenes');
+    Route::get('/nuevo-folio-orden', [OrdenServicioController::class, 'nuevoFolio'])->name('ordenes.nuevo-folio');
 });
