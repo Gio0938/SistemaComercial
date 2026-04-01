@@ -64,4 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('ordenes', OrdenServicioController::class);
     Route::get('/mis-ordenes', [OrdenServicioController::class, 'misOrdenes'])->name('ordenes.mis-ordenes');
     Route::get('/nuevo-folio-orden', [OrdenServicioController::class, 'nuevoFolio'])->name('ordenes.nuevo-folio');
-});
+
+    // Rutas para marcas y modelos (API)
+        Route::get('/get-marcas-por-tipo', [OrdenServicioController::class, 'getMarcasPorTipo']);
+        Route::get('/get-modelos-por-marca', [OrdenServicioController::class, 'getModelosPorMarca']);
+    });

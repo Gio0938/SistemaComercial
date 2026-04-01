@@ -7,6 +7,8 @@ use App\Models\OrdenServicioDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Marca;
+use App\Models\Modelo;
 
 class OrdenServicioController extends Controller
 {
@@ -24,7 +26,34 @@ class OrdenServicioController extends Controller
         $ultimoFolio = OrdenServicio::max('folio');
         $nuevoFolio = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
 
-        return view('ordenes.create', compact('nuevoFolio'));
+        // Obtener todas las marcas (para el select)
+        $marcas = Marca::orderBy('nombre')->get();
+
+        return view('ordenes.create', compact('nuevoFolio', 'marcas'));
+    }
+
+// API: Obtener marcas por tipo de equipo
+    public function getMarcasPorTipo(Request $request)
+    {
+        $tipoEquipo = $request->tipo_equipo;
+
+        $marcas = Marca::where('tipo_equipo', $tipoEquipo)
+            ->orderBy('nombre')
+            ->get(['idmarca', 'nombre']);
+
+        return response()->json($marcas);
+    }
+
+// API: Obtener modelos por marca
+    public function getModelosPorMarca(Request $request)
+    {
+        $idmarca = $request->idmarca;
+
+        $modelos = Modelo::where('idmarca', $idmarca)
+            ->orderBy('nombre')
+            ->get(['idmodelo', 'nombre']);
+
+        return response()->json($modelos);
     }
 
 

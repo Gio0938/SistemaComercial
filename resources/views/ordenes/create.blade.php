@@ -271,40 +271,47 @@
 
                 <!-- Datos del Equipo -->
                 <div class="card pos-card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-laptop me-2"></i>Datos del Equipo
-                        </h5>
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-laptop me-2"></i>Datos del Equipo</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-4 mb-2">
                                 <label class="form-label small">Tipo de Equipo *</label>
-                                <select class="form-select" id="equipo_tipo">
-                                    <option value="Laptop">Laptop</option>
-                                    <option value="PC Escritorio">PC Escritorio</option>
-                                    <option value="Tablet">Tablet</option>
-                                    <option value="Impresora">Impresora</option>
-                                    <option value="Otro">Otro</option>
+                                <select class="form-select" id="equipo_tipo" required>
+                                    <option value="">Seleccione un tipo...</option>
+                                    <option value="Laptop">💻 Laptop</option>
+                                    <option value="PC Escritorio">🖥️ PC Escritorio</option>
+                                    <option value="Tablet">📱 Tablet</option>
+                                    <option value="Impresora">🖨️ Impresora</option>
+                                    <option value="Otro">🔧 Otro</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label small">Marca</label>
-                                <input type="text" class="form-control" id="equipo_marca" placeholder="Ej: HP, Dell">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label small">Marca *</label>
+                                <select class="form-select" id="equipo_marca" disabled>
+                                    <option value="">Primero seleccione un tipo de equipo</option>
+                                </select>
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label small">Modelo</label>
-                                <input type="text" class="form-control" id="equipo_modelo" placeholder="Ej: Pavilion, XPS">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label small">Modelo *</label>
+                                <select class="form-select" id="equipo_modelo" disabled>
+                                    <option value="">Primero seleccione una marca</option>
+                                </select>
                             </div>
+                        </div>
+                        <div class="row mt-2">
                             <div class="col-md-6 mb-2">
                                 <label class="form-label small">No. Serie</label>
                                 <input type="text" class="form-control" id="equipo_serie" placeholder="Número de serie">
                             </div>
-                            <div class="col-md-12 mb-2">
+                            <div class="col-md-6 mb-2">
                                 <label class="form-label small">Especificaciones</label>
                                 <textarea class="form-control" id="especificaciones" rows="2" placeholder="Procesador, RAM, ROM, GPU..."></textarea>
                             </div>
-                            <div class="col-md-12 mb-2">
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
                                 <label class="form-label small">Diagnóstico / Problemas</label>
                                 <textarea class="form-control" id="diagnostico" rows="2" placeholder="Describa el problema del equipo..."></textarea>
                             </div>
@@ -743,6 +750,89 @@
             actualizarTabla();
         }
 
+        // ==================== DATOS DEL EQUIPO DINÁMICOS ====================
+        const equipoTipo = document.getElementById('equipo_tipo');
+        const equipoMarca = document.getElementById('equipo_marca');
+        const equipoModelo = document.getElementById('equipo_modelo');
+
+        // Cuando cambia el tipo de equipo, cargar marcas
+        equipoTipo.addEventListener('change', function() {
+            const tipo = this.value;
+
+            if (!tipo) {
+                equipoMarca.innerHTML = '<option value="">Primero seleccione un tipo de equipo</option>';
+                equipoMarca.disabled = true;
+                equipoModelo.innerHTML = '<option value="">Primero seleccione una marca</option>';
+                equipoModelo.disabled = true;
+                return;
+            }
+
+            // Mostrar loading
+            equipoMarca.innerHTML = '<option value="">Cargando marcas...</option>';
+            equipoMarca.disabled = true;
+
+            fetch(`/get-marcas-por-tipo?tipo_equipo=${encodeURIComponent(tipo)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    equipoMarca.innerHTML = '<option value="">Seleccione una marca...</option>';
+
+                    data.forEach(marca => {
+                        equipoMarca.innerHTML += `<option value="${marca.idmarca}">${marca.nombre}</option>`;
+                    });
+
+                    equipoMarca.disabled = false;
+                    equipoModelo.innerHTML = '<option value="">Primero seleccione una marca</option>';
+                    equipoModelo.disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error al cargar marcas:', error);
+                    equipoMarca.innerHTML = '<option value="">Error al cargar marcas</option>';
+                });
+        });
+
+        // Cuando cambia la marca, cargar modelos
+        equipoMarca.addEventListener('change', function() {
+            const idmarca = this.value;
+
+            if (!idmarca) {
+                equipoModelo.innerHTML = '<option value="">Primero seleccione una marca</option>';
+                equipoModelo.disabled = true;
+                return;
+            }
+
+            // Mostrar loading
+            equipoModelo.innerHTML = '<option value="">Cargando modelos...</option>';
+            equipoModelo.disabled = true;
+
+            fetch(`/get-modelos-por-marca?idmarca=${idmarca}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    equipoModelo.innerHTML = '<option value="">Seleccione un modelo...</option>';
+
+                    data.forEach(modelo => {
+                        equipoModelo.innerHTML += `<option value="${modelo.idmodelo}">${modelo.nombre}</option>`;
+                    });
+
+                    equipoModelo.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error al cargar modelos:', error);
+                    equipoModelo.innerHTML = '<option value="">Error al cargar modelos</option>';
+                });
+        });
+
         // ==================== GUARDAR ORDEN ====================
         function guardarOrden() {
             if (carrito.length === 0) {
@@ -756,6 +846,13 @@
                 return;
             }
 
+            // Obtener los valores seleccionados de marca y modelo
+            const marcaSelect = document.getElementById('equipo_marca');
+            const modeloSelect = document.getElementById('equipo_modelo');
+
+            const marcaNombre = marcaSelect.options[marcaSelect.selectedIndex]?.text || '';
+            const modeloNombre = modeloSelect.options[modeloSelect.selectedIndex]?.text || '';
+
             const ordenData = {
                 folio: document.getElementById('folio_actual').value,
                 cliente_nombre: clienteNombre,
@@ -763,14 +860,29 @@
                 cliente_telefono: document.getElementById('cliente_telefono').value,
                 cliente_email: document.getElementById('cliente_email').value,
                 equipo_tipo: document.getElementById('equipo_tipo').value,
-                equipo_marca: document.getElementById('equipo_marca').value,
-                equipo_modelo: document.getElementById('equipo_modelo').value,
+                equipo_marca: marcaNombre,  // Guardamos el nombre de la marca
+                equipo_marca_id: marcaSelect.value,  // Guardamos también el ID si lo necesitas
+                equipo_modelo: modeloNombre,  // Guardamos el nombre del modelo
+                equipo_modelo_id: modeloSelect.value,  // Guardamos también el ID
                 equipo_serie: document.getElementById('equipo_serie').value,
                 especificaciones: document.getElementById('especificaciones').value,
                 diagnostico: document.getElementById('diagnostico').value,
                 detalles: carrito,
                 total: carrito.reduce((sum, item) => sum + item.subtotal, 0)
             };
+
+            // Validar que se haya seleccionado marca y modelo (opcional)
+            if (document.getElementById('equipo_tipo').value && !marcaNombre) {
+                alert('⚠️ Por favor seleccione una marca para el equipo');
+                return;
+            }
+
+            if (marcaNombre && !modeloNombre) {
+                alert('⚠️ Por favor seleccione un modelo para el equipo');
+                return;
+            }
+
+            console.log('Datos a enviar:', ordenData); // Para depuración
 
             document.getElementById('loading_overlay').style.display = 'flex';
 
@@ -788,21 +900,30 @@
                     document.getElementById('loading_overlay').style.display = 'none';
                     if (data.success) {
                         alert('✅ Orden de servicio guardada exitosamente');
+
                         // Limpiar carrito
                         carrito = [];
                         actualizarTabla();
+
                         // Limpiar campos del cliente
                         document.getElementById('cliente_nombre').value = '';
                         document.getElementById('cliente_rfc').value = '';
                         document.getElementById('cliente_telefono').value = '';
                         document.getElementById('cliente_email').value = '';
-                        document.getElementById('equipo_marca').value = '';
-                        document.getElementById('equipo_modelo').value = '';
+
+                        // Limpiar campos del equipo
+                        document.getElementById('equipo_tipo').value = '';
+                        document.getElementById('equipo_marca').innerHTML = '<option value="">Primero seleccione un tipo de equipo</option>';
+                        document.getElementById('equipo_marca').disabled = true;
+                        document.getElementById('equipo_modelo').innerHTML = '<option value="">Primero seleccione una marca</option>';
+                        document.getElementById('equipo_modelo').disabled = true;
                         document.getElementById('equipo_serie').value = '';
                         document.getElementById('especificaciones').value = '';
                         document.getElementById('diagnostico').value = '';
+
                         // Recargar historial
                         cargarHistorial();
+
                         // Actualizar folio
                         actualizarFolio();
                     } else {
@@ -812,7 +933,7 @@
                 .catch(error => {
                     document.getElementById('loading_overlay').style.display = 'none';
                     console.error('Error:', error);
-                    alert('❌ Error al guardar la orden');
+                    alert('❌ Error al guardar la orden: ' + error.message);
                 });
         }
 
