@@ -75,7 +75,7 @@ class VentaController extends Controller
     }
 
 // API para obtener productos por tipo de equipo (EQUIPOS)
-    public function getProductosPorTipoEquipo(Request $request)
+    /*public function getProductosPorTipoEquipo(Request $request)
     {
         $tipoEquipo = $request->tipo_equipo;
 
@@ -88,10 +88,10 @@ class VentaController extends Controller
         }
 
         return response()->json($productos->get(['idprod', 'nombre', 'precio', 'stock', 'categoria']));
-    }
+    }*/
 
     // API: Obtener productos por tipo de equipo (PC Escritorio, Laptop)
-   /* public function getProductosPorTipoEquipo(Request $request)
+   public function getProductosPorTipoEquipo(Request $request)
     {
         $tipoEquipo = $request->tipo_equipo;
 
@@ -103,7 +103,7 @@ class VentaController extends Controller
         }
 
         return response()->json($productos->get(['idprod', 'nombre', 'precio', 'stock', 'categoria']));
-    }*/
+    }
 
     public function store(Request $request)
     {

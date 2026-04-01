@@ -125,6 +125,13 @@
                 </ul>
                 <!-- En resources/views/layouts/app.blade.php - Agregar después de Promociones -->
 
+                <!-- ========== BOTÓN DE REPORTES ========== -->
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('reportes*') ? 'active' : '' }}" href="{{ route('reportes.index') }}">
+                        <i class="fas fa-chart-bar me-2"></i>Reportes
+                    </a>
+                </li>
+                <!-- ======================================= -->
                 <!-- En el sidebar, donde está el menú -->
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('ventas/pos*') ? 'active' : '' }}"

@@ -357,7 +357,7 @@
                                 <select class="form-select" id="tipo_equipo_select">
                                     <option value="">Seleccione un tipo...</option>
                                     <option value="Laptop">💻 Laptop</option>
-                                    <option value="Computadora de Escritorio">🖥️ Computadora de Escritorio</option>
+                                    <option value="Computadoras de Escritorio">🖥️ Computadora de Escritorio</option>
                                 </select>
                             </div>
 
