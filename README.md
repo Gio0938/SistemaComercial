@@ -1,40 +1,15 @@
 # 🚀 Sistema de Gestión Comercial - Laravel
 
-![Laravel](https://img.shields.io/badge/Laravel-10-red)
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-En%20Desarrollo-yellow)
+![Laravel](https://img.shields.io/badge/Laravel-10-red?style=flat-square&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue?style=flat-square&logo=php)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?style=flat-square&logo=mysql)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?style=flat-square&logo=bootstrap)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=flat-square)
 
----
+## 📋 Descripción
 
-## 🎥 Demo / Capturas
-
-> 📸 **Screenshots / GIFs del sistema**
-
-![Dashboard](doc/screenshot/Dashboard.png)
-![Servicios](doc/screenshot/Servicios.png)
-![Productos](doc/screenshot/Productos.png)
-![Promociones](doc/screenshot/Promociones.png)
-
----
-
-## 📑 Tabla de Contenidos
-
-* [Características](#-características-principales)
-* [Tecnologías](#-stack-tecnológico)
-* [Instalación](#-instalación-local)
-* [Configuración](#️-configuración-del-sistema)
-* [Uso](#-guía-de-uso)
-* [API](#-endpoints-api)
-* [Estructura](#-estructura-de-archivos)
-* [Base de Datos](#-esquema-de-base-de-datos)
-* [Testing](#-testing-y-calidad)
-* [Despliegue](#-despliegue-en-producción)
-* [Seguridad](#-mejores-prácticas-de-seguridad)
-* [Contribución](#-guía-de-contribución)
-* [Licencia](#-licencia)
-* [Contacto](#-contacto-y-soporte)
+Sistema completo de gestión comercial desarrollado en Laravel que permite administrar **productos, servicios, promociones, ventas y servicios técnicos** de manera eficiente. Incluye dashboard administrativo, sistema de reportes, punto de venta (POS) y página pública para clientes.
 
 ---
 
@@ -42,89 +17,115 @@
 
 ### 🛠️ Módulos del Sistema
 
-* ✅ **Gestión de Servicios** (Interno, Externo, Domicilio, Online)
-* ✅ **Control de Productos** con inventario, stock y marcas
-* ✅ **Sistema de Promociones** con reglas y fechas
-* ✅ **Dashboard Avanzado** con métricas en tiempo real
-* ✅ **Reportes Exportables** (PDF / Excel)
-* ✅ **Página Pública** tipo catálogo
-* ✅ **Gestión de Usuarios** con roles y permisos
+| Módulo | Descripción |
+|--------|-------------|
+| **📦 Productos** | CRUD completo con control de inventario, stock, marcas, imágenes |
+| **🔧 Servicios** | CRUD completo con tipos (Interno, Externo, Domicilio, Online) |
+| **🏷️ Promociones** | Sistema de descuentos (Porcentaje, Fijo, 2x1, 3x2, Envío Gratis) |
+| **🛒 Punto de Venta (POS)** | Carrito dinámico, productos periféricos/equipos, cálculo de garantía |
+| **🔧 Servicios Técnicos** | Órdenes de servicio con preventivo/correctivo, carrito de servicios |
+| **📊 Dashboard** | Estadísticas en tiempo real con métricas clave |
+| **📈 Reportes** | Exportación a PDF de productos, servicios, promociones y ventas |
+| **🌐 Página Web Pública** | Catálogo dinámico de productos y servicios |
+| **👥 Usuarios** | Autenticación con roles (Admin, Empleado) |
 
 ### 🎨 Interfaz de Usuario
 
-* Bootstrap 5 moderno y responsive
-* Checkboxes interactivos de estado
-* Subida de imágenes con vista previa
-* Tablas con búsqueda y paginación
-* Notificaciones y modales
-* Validación de formularios en tiempo real
+- ✅ Diseño moderno con Bootstrap 5
+- ✅ Checkboxes interactivos para estados
+- ✅ Subida de imágenes con vista previa
+- ✅ Tablas con paginación y búsqueda
+- ✅ Notificaciones y modales de confirmación
+- ✅ Formularios con validación en tiempo real
+- ✅ Panel de radio buttons dinámicos
+- ✅ Carrito de compras interactivo
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
 ### Backend
-
-* **Laravel 10**
-* **PHP 8.1+**
-* **MySQL 8.0**
-* **Eloquent ORM**
-* **Blade**
-* **Laravel DomPDF**
+| Tecnología | Versión |
+|------------|---------|
+| Laravel | 10.x |
+| PHP | 8.1+ |
+| MySQL | 8.0+ |
+| Eloquent ORM | - |
+| Blade | - |
+| Laravel DomPDF | ^2.0 |
 
 ### Frontend
-
-* **Bootstrap 5.3**
-* **FontAwesome 6**
-* **JavaScript Vanilla**
-* **CSS3**
+| Tecnología | Versión |
+|------------|---------|
+| Bootstrap | 5.3 |
+| FontAwesome | 6.0 |
+| JavaScript | Vanilla |
+| CSS3 | - |
 
 ### Herramientas
-
-* Composer
-* NPM
-* Git
-* PHPUnit
+- Composer
+- NPM
+- Git
+- PHPUnit
 
 ---
 
 ## 🚀 Instalación Local
 
-### Requisitos
+### Requisitos Previos
 
-* PHP >= 8.1
-* Composer
-* MySQL 8.0
-* Node.js 18+
-* Git
+- PHP >= 8.1
+- Composer >= 2.5
+- MySQL >= 8.0
+- Node.js >= 18.x
+- Git
 
-### Pasos
+### Pasos de Instalación
 
 ```bash
+# 1. Clonar repositorio
 git clone https://github.com/Gio0938/gestion-comercial.git
 cd gestion-comercial
+
+# 2. Instalar dependencias PHP
 composer install
+
+# 3. Instalar dependencias JavaScript
 npm install
 npm run build
+
+# 4. Configurar entorno
 cp .env.example .env
 php artisan key:generate
+
+# 5. Configurar base de datos en .env
+# DB_DATABASE=gestion_comercial
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Ejecutar migraciones y seeders
 php artisan migrate --seed
+
+# 7. Crear enlace simbólico para imágenes
 php artisan storage:link
+
+# 8. Iniciar servidor
 php artisan serve
 ```
 
-📍 Acceso: `http://localhost:8000`
+Acceso al Sistema
+URL	Descripción
+http://localhost:8000	Página web pública
+http://localhost:8000/login	Panel administrativo
+Credenciales de acceso:
 
-👤 **Admin demo**
+Email: admin@empresa.com
 
-* Email: [admin@empresa.com](mailto:admin@empresa.com)
-* Password: password
+Contraseña: password
 
----
+⚙️ Configuración del Sistema
+Variables de Entorno (.env)
 
-## ⚙️ Configuración del Sistema
-
-```env
 APP_NAME="Gestión Comercial"
 APP_ENV=local
 APP_DEBUG=true
@@ -138,170 +139,264 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 FILESYSTEM_DISK=public
-```
 
-```bash
+Configuración de Imágenes
+
+# Crear estructura de carpetas
 mkdir -p storage/app/public/{servicios,productos,usuarios}
-chmod -R 775 storage bootstrap/cache
-```
 
----
+# Permisos
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
 
-## 📚 Guía de Uso
+📚 Guía de Uso
+Panel Administrativo
+Sección	Funcionalidad
+Dashboard	Estadísticas generales del sistema
+Servicios	CRUD de servicios (crear, editar, eliminar)
+Productos	CRUD de productos con control de stock
+Promociones	CRUD de promociones con fechas y descuentos
+Punto de Venta	Sistema POS con carrito dinámico
+Servicios Técnicos	Órdenes de servicio con preventivo/correctivo
+Historial de Ventas	Listado de ventas con edición y eliminación
+Reportes	Exportación a PDF de todos los módulos
+Punto de Venta (POS)
+Seleccionar tipo: Periférico o Equipo
 
-### Panel Admin
+Seleccionar producto según categoría
 
-1. Login
-2. Dashboard
-3. Servicios
-4. Productos
-5. Promociones
-6. Reportes
+Configurar cantidad y garantía (si aplica)
 
-### Roles
+Agregar al carrito
 
-* **Admin**: acceso total
-* **Empleado**: gestión limitada
-* **Cliente**: solo catálogo
+Procesar venta → genera ticket PDF
 
----
+Servicios Técnicos
+Seleccionar tipo: Preventivo o Correctivo
 
-## 📁 Estructura de Archivos
+Completar datos del servicio
 
-```text
+Agregar al carrito
+
+Guardar orden → se genera orden de servicio
+
+📁 Estructura de Archivos
+
 gestion-comercial/
 ├── app/
 │   ├── Http/Controllers/
-│   ├── Models/
+│   │   ├── AuthController.php
+│   │   ├── DashboardController.php
+│   │   ├── ProductoController.php
+│   │   ├── ServicioController.php
+│   │   ├── PromocionController.php
+│   │   ├── VentaController.php
+│   │   ├── OrdenServicioController.php
+│   │   ├── ReporteController.php
+│   │   └── PublicController.php
+│   └── Models/
+│       ├── User.php
+│       ├── Producto.php
+│       ├── Servicio.php
+│       ├── Promocion.php
+│       ├── Venta.php
+│       ├── VentaDetalle.php
+│       ├── OrdenServicio.php
+│       ├── OrdenServicioDetalle.php
+│       ├── Cliente.php
+│       ├── Marca.php
+│       └── Modelo.php
 ├── database/
 │   ├── migrations/
-│   ├── seeders/
+│   └── seeders/
 ├── resources/
-│   ├── views/
-│   └── lang/
+│   └── views/
+│       ├── layouts/
+│       ├── servicios/
+│       ├── productos/
+│       ├── promociones/
+│       ├── ventas/
+│       ├── ordenes/
+│       ├── reportes/
+│       └── public/
 ├── routes/
+│   └── web.php
 ├── storage/
-├── public/
-└── tests/
-```
+│   └── app/public/
+└── public/
 
-### Ejemplo Modelo
+Ejemplo de Modelo
 
-```php
-class Servicio extends Model
+
+class Producto extends Model
 {
-    protected $table = 'servicios';
-    protected $primaryKey = 'idserv';
+    protected $table = 'productos';
+    protected $primaryKey = 'idprod';
+
+    protected $fillable = [
+        'nombre', 'descripcion', 'precio', 'foto',
+        'marca', 'disponible', 'stock', 'categoria'
+    ];
 
     public function promociones()
     {
-        return $this->hasMany(Promocion::class);
+        return $this->hasMany(Promocion::class, 'producto_id');
     }
 }
-```
 
----
+🗄️ Esquema de Base de Datos
+Tablas Principales
+Tabla	Descripción
+usuarios	Usuarios del sistema (admin, empleado)
+clientes	Datos de clientes
+productos	Catálogo de productos
+servicios	Catálogo de servicios
+promociones	Promociones y descuentos
+ventas	Cabecera de ventas
+ventas_detalles	Detalle de productos vendidos
+ordenes_servicio	Cabecera de órdenes de servicio
+ordenes_servicio_detalles	Detalle de servicios realizados
+marcas	Marcas de equipos
+modelos	Modelos de equipos por marca
 
-## 🗄️ Esquema de Base de Datos
 
-```sql
-CREATE TABLE servicios (
-  idserv INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(255),
-  precio DECIMAL(10,2),
-  tipo_servicio ENUM('Interno','Externo','Domicilio','Online'),
-  disponible BOOLEAN
-);
-```
+Diagrama de Relaciones
 
-Relaciones:
+usuarios ──┐
+          ├── ventas ── ventas_detalles ── productos
+clientes ─┘
 
-```
-Servicios ──┐
-            ├── Promociones
-Productos ──┘
-Usuarios ────┘
-```
+usuarios ──┐
+          ├── ordenes_servicio ── ordenes_servicio_detalles
+clientes ─┘
 
----
+productos ──┐
+           ├── promociones
+servicios ─┘
 
-## 🔌 Endpoints API
+🔌 Endpoints API
+Autenticación
 
-```http
 POST /api/login
-GET  /api/servicios
-POST /api/servicios
-GET  /api/productos
-```
+Content-Type: application/json
 
----
+{
+    "email": "admin@empresa.com",
+    "password": "password"
+}
 
-## 🧪 Testing y Calidad
+Productos
 
-```bash
+GET    /api/productos     # Listar productos
+GET    /api/productos/{id} # Ver producto
+
+Servicios
+
+GET    /api/servicios     # Listar servicios
+GET    /api/servicios/{id} # Ver servicio
+
+🧪 Testing y Calidad
+
+
+# Ejecutar todos los tests
 php artisan test
+
+# Tests de características
 php artisan test --testsuite=Feature
-```
 
----
+# Tests unitarios
+php artisan test --testsuite=Unit
 
-## 🚀 Despliegue en Producción
+🚀 Despliegue en Producción
+Servidor Recomendado
+SO: Ubuntu 22.04 LTS
 
-* Ubuntu 22.04
-* Nginx
-* PHP-FPM 8.2
-* MySQL 8
-* Redis
+Web Server: Nginx
 
-```bash
+PHP: PHP-FPM 8.2
+
+Database: MySQL 8.0
+
+Cache: Redis
+
+Pasos de Despliegue
+
+# 1. Optimizar aplicación
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-```
 
----
+# 2. Configurar permisos
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
 
-## 🔒 Mejores Prácticas de Seguridad
+# 3. Configurar variables de producción
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://tudominio.com
 
-* Autenticación segura
-* CSRF Protection
-* Validaciones
-* XSS / SQL Injection protection
-* Rate limiting
+🔒 Mejores Prácticas de Seguridad
+✅ Autenticación con hash bcrypt
 
----
+✅ Protección CSRF en formularios
 
-## 🤝 Guía de Contribución
+✅ Validación de entrada de datos
 
-1. Fork
-2. Feature branch
-3. Commit
-4. Pull Request
+✅ SQL injection protection (Eloquent)
 
----
+✅ XSS protection (Blade escaping)
 
-## 📄 Licencia
+✅ Rate limiting en rutas sensibles
 
-Licencia **MIT**
+✅ Permisos por roles (Admin/Empleado)
 
----
+🤝 Guía de Contribución
+Fork el proyecto
 
-## 📞 Contacto y Soporte
+Crear rama de feature (git checkout -b feature/nueva-funcionalidad)
 
-* **Autor**: Gio0938
-* **GitHub**: [https://github.com/Gio0938](https://github.com/Gio0938)
-* **Email**: [tu-email@empresa.com](mailto:tu-email@empresa.com)
+Commit cambios (git commit -m 'Agregar nueva funcionalidad')
 
----
+Push a la rama (git push origin feature/nueva-funcionalidad)
 
-## 🙏 Agradecimientos
+Abrir Pull Request
 
-* Laravel Community
-* Bootstrap Team
-* Contribuidores
+📄 Licencia
+Este proyecto está bajo la Licencia MIT. Ver archivo LICENSE para más detalles.
 
----
+📞 Contacto y Soporte
+Desarrollador
+Nombre: Giovani Rojas
 
-⭐ **Si este proyecto te fue útil, dale una estrella en GitHub**
+GitHub: @Gio0938
 
-[![Star History Chart](https://api.star-history.com/svg?repos=tu-usuario/gestion-comercial\&type=Date)](https://star-history.com/#tu-usuario/gestion-comercial&Date)
+Email: giovani.rojas@empresa.com
+
+Soporte Técnico
+Issues: GitHub Issues
+
+Documentación: Wiki del Proyecto
+
+🙏 Agradecimientos
+Laravel Community - Por el increíble framework
+
+Bootstrap Team - Por el sistema de componentes
+
+Contribuidores - Por su valioso tiempo y esfuerzo
+
+📊 Estado del Proyecto
+Módulo	Estado
+Productos	✅ Completado
+Servicios	✅ Completado
+Promociones	✅ Completado
+Punto de Venta	✅ Completado
+Servicios Técnicos	✅ Completado
+Reportes	✅ Completado
+Página Web Pública	✅ Completado
+Autenticación	✅ Completado
+⭐ Si este proyecto te fue útil, ¡dale una estrella en GitHub!
+
+https://api.star-history.com/svg?repos=Gio0938/gestion-comercial&type=Date
+
+Desarrollado con ❤️ usando Laravel
+
