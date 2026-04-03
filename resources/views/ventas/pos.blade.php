@@ -356,7 +356,7 @@
                                 <label>Tipo de equipo <span class="required">*</span></label>
                                 <select class="form-select" id="tipo_equipo_select">
                                     <option value="">Seleccione un tipo...</option>
-                                    <option value="Laptop">💻 Laptop</option>
+                                    <option value="Laptops">💻 Laptop</option>
                                     <option value="Computadoras de Escritorio">🖥️ Computadora de Escritorio</option>
                                 </select>
                             </div>
@@ -498,7 +498,7 @@
                                     <th>Total</th>
                                     <th>Especificaciones</th>
                                     <th>Duración</th>
-                                    <th width="60">Opciones</th>
+                                    <th width="80">Opciones</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tabla_historial">
@@ -508,7 +508,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
 
 
@@ -991,6 +990,8 @@
 
         // ==================== CARGAR HISTORIAL DE VENTAS DEL USUARIO ====================
         function cargarHistorial() {
+            console.log('🔵 Cargando historial...');
+
             fetch('{{ route("ventas.mis-ventas") }}')
                 .then(response => response.json())
                 .then(data => {
@@ -998,7 +999,7 @@
                     const totalHistorial = document.getElementById('total_historial');
 
                     if (data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No hay ventas registradas</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No hay ventas registradas</td></td>';
                         totalHistorial.textContent = '0';
                         return;
                     }
@@ -1019,10 +1020,17 @@
                             <td>$${parseFloat(detalle.subtotal).toFixed(2)}</td>
                             <td><small>${detalle.especificaciones ? (detalle.especificaciones.length > 20 ? detalle.especificaciones.substring(0, 20) + '...' : detalle.especificaciones) : '-'}</small></td>
                             <td>${duracion}</td>
-                            <td>
-                                <a href="{{ url('/ventas/ticket') }}/${venta.idventa}" class="btn btn-info btn-sm" target="_blank">
-                                    <i class="fas fa-print"></i>
-                                </a>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <!-- Botón Ticket -->
+                                    <a href="{{ url('/ventas/ticket') }}/${venta.idventa}" class="btn btn-info btn-sm" target="_blank" title="Ver Ticket">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <!-- Botón Eliminar -->
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarVenta(${venta.idventa})" title="Eliminar Venta">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;

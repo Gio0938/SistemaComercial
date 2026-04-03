@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Historial de Ventas')
@@ -55,59 +54,127 @@
                             </div>
                         </div>
 
-                        <!-- Tabla de Ventas -->
+                        <!-- Tabla de Ventas con Productos -->
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                            <table class="table table-bordered table-hover">
+                                <thead class="bg-dark text-white">
                                 <tr>
-                                    <th>Folio</th>
+                                    <th># Venta</th>
                                     <th>Fecha</th>
                                     <th>Cliente</th>
-                                    <th>Empleado</th>
-                                    <th>Subtotal</th>
-                                    <th>IVA</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
                                     <th>Total</th>
-                                    <th>Estado</th>
+                                    <th>Garantía</th>
+                                    <th>Duración</th>
+                                    <th>Empleado</th>
                                     <th>Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $contador = 1;
+                                @endphp
                                 @forelse($ventas as $venta)
-                                    <tr>
-                                        <td>
-                                            <strong>#{{ $venta->folio }}</strong>
-                                        </td>
-                                        <td>{{ $venta->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $venta->cliente->nombre ?? 'Público' }}</td>
-                                        <td>{{ $venta->usuario->name ?? 'N/A' }}</td>
-                                        <td>${{ number_format($venta->subtotal, 2) }}</td>
-                                        <td>${{ number_format($venta->iva, 2) }}</td>
-                                        <td>${{ number_format($venta->total, 2) }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $venta->estado == 'completada' ? 'success' : ($venta->estado == 'pendiente' ? 'warning' : 'danger') }}">
-                                                {{ ucfirst($venta->estado) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ route('ventas.ticket', $venta->idventa) }}"
-                                                   class="btn btn-info btn-sm" target="_blank">
-                                                    <i class="fas fa-print"></i> Ticket
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    @php
+                                        $numDetalles = $venta->detalles->count();
+                                        $primerDetalle = true;
+                                    @endphp
+
+                                    @foreach($venta->detalles as $detalle)
+                                        <tr>
+                                            @if($primerDetalle)
+                                                <td rowspan="{{ $numDetalles }}" class="align-middle text-center">
+                                                <span class="badge bg-primary" style="font-size: 1rem; padding: 6px 12px;">
+                                                    {{ $contador }}
+                                                </span>
+                                                    <br><small class="text-muted">Folio: {{ $venta->folio }}</small>
+                                                </td>
+                                                <td rowspan="{{ $numDetalles }}" class="align-middle text-center">
+                                                    {{ $venta->created_at->format('d/m/Y H:i') }}
+                                                </td>
+                                                <td rowspan="{{ $numDetalles }}" class="align-middle">
+                                                    {{ $venta->cliente->nombre ?? 'Público' }}
+                                                    @if($venta->cliente && $venta->cliente->telefono)
+                                                        <br><small class="text-muted">Tel: {{ $venta->cliente->telefono }}</small>
+                                                    @endif
+                                                </td>
+                                                @php $primerDetalle = false; @endphp
+                                            @endif
+
+                                            <td>
+                                                <strong>{{ $detalle->producto->nombre ?? 'Producto no encontrado' }}</strong>
+                                                @if($detalle->especificaciones)
+                                                    <br><small class="text-muted">{{ Str::limit($detalle->especificaciones, 40) }}</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info">{{ $detalle->cantidad }}</span>
+                                            </td>
+                                            <td class="text-end fw-bold text-success">
+                                                ${{ number_format($detalle->subtotal, 2) }}
+                                            </td>
+                                            <td class="text-center">
+                                                @if($detalle->garantia)
+                                                    <span class="badge bg-success">Sí</span>
+                                                @else
+                                                    <span class="badge bg-secondary">No</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if($detalle->duracion_garantia)
+                                                    <span class="badge bg-info">{{ $detalle->duracion_garantia }}</span>
+                                                @else
+                                                    <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
+
+                                            @if($loop->first)
+                                                <td rowspan="{{ $numDetalles }}" class="align-middle">
+                                                    {{ $venta->usuario->name ?? 'N/A' }}
+                                                </td>
+                                                <td rowspan="{{ $numDetalles }}" class="align-middle text-center">
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ route('ventas.ticket', $venta->idventa) }}" class="btn btn-info btn-sm" target="_blank" title="Ver Ticket">
+                                                            <i class="fas fa-print"></i>
+                                                        </a>
+                                                        <a href="{{ route('ventas.edit', $venta->idventa) }}" class="btn btn-warning btn-sm" title="Editar Venta">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <form action="{{ route('ventas.destroy', $venta->idventa) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar esta venta?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger btn-sm" title="Eliminar Venta">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                    @php $contador++; @endphp
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center">No hay ventas registradas</td>
+                                        <td colspan="10" class="text-center text-muted py-5">
+                                            <i class="fas fa-shopping-cart fa-3x mb-3 d-block"></i>
+                                            No hay ventas registradas
+                                        </td>
                                     </tr>
                                 @endforelse
                                 </tbody>
+                                <tfoot class="bg-light">
+                                <tr>
+                                    <td colspan="10" class="text-end">
+                                        <strong>Total de ventas: {{ $ventas->total() }}</strong>
+                                    </td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
 
                         <!-- Paginación -->
-                        <div class="mt-3">
+                        <div class="mt-3 d-flex justify-content-center">
                             {{ $ventas->links() }}
                         </div>
                     </div>
@@ -116,3 +183,28 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <style>
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
+        .bg-dark {
+            background-color: #2c3e50 !important;
+        }
+        .badge {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .text-success {
+            color: #27ae60 !important;
+            font-weight: 600;
+        }
+    </style>
+@endpush

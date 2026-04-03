@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Marca;
+use App\Models\User;
 use App\Models\Modelo;
 
 class OrdenServicioController extends Controller
@@ -67,35 +68,109 @@ class OrdenServicioController extends Controller
     public function edit($id)
     {
         $orden = OrdenServicio::with('detalles')->findOrFail($id);
-        return view('ordenes.edit', compact('orden'));
+
+        if (!Auth::user()->esAdmin()) {
+            return redirect()->route('ordenes.index')->with('error', 'No tienes permiso para editar');
+        }
+
+        $usuarios = User::all();
+
+        return view('ordenes.edit', compact('orden', 'usuarios'));
     }
 
     public function update(Request $request, $id)
     {
         $orden = OrdenServicio::findOrFail($id);
 
-        $request->validate([
-            'estado' => 'required|in:Pendiente,En Proceso,Completado,Entregado',
-            'diagnostico' => 'nullable|string'
-        ]);
+        if (!Auth::user()->esAdmin()) {
+            return redirect()->route('ordenes.index')->with('error', 'No tienes permiso para editar');
+        }
 
-        $orden->update([
-            'estado' => $request->estado,
-            'diagnostico' => $request->diagnostico ?? $orden->diagnostico
-        ]);
+        DB::beginTransaction();
 
-        return redirect()->route('ordenes.show', $orden->idorden)
-            ->with('success', 'Orden actualizada exitosamente');
+        try {
+            // Actualizar datos principales
+            $orden->update([
+                'estado' => $request->estado,
+                'tecnico_nombre' => $request->tecnico_nombre,
+                'cliente_nombre' => $request->cliente_nombre,
+                'cliente_rfc' => $request->cliente_rfc,
+                'cliente_telefono' => $request->cliente_telefono,
+                'cliente_email' => $request->cliente_email,
+                'equipo_tipo' => $request->equipo_tipo,
+                'equipo_marca' => $request->equipo_marca,
+                'equipo_modelo' => $request->equipo_modelo,
+                'equipo_serie' => $request->equipo_serie,
+                'especificaciones' => $request->especificaciones,
+                'diagnostico' => $request->diagnostico
+            ]);
+
+            // Eliminar servicios marcados
+            if ($request->servicios_eliminados) {
+                $eliminados = json_decode($request->servicios_eliminados, true);
+                foreach ($eliminados as $idDetalle) {
+                    OrdenServicioDetalle::find($idDetalle)->delete();
+                }
+            }
+
+            // Actualizar servicios existentes
+            if ($request->servicios) {
+                foreach ($request->servicios as $idDetalle => $data) {
+                    $detalle = OrdenServicioDetalle::find($idDetalle);
+                    if ($detalle) {
+                        $subtotal = ($data['costo_hr'] * $data['horas']) + ($data['costo_refaccion'] ?? 0);
+                        $detalle->update([
+                            'tipo' => $data['tipo'],
+                            'servicio_nombre' => $data['servicio_nombre'],
+                            'costo_hr' => $data['costo_hr'],
+                            'horas' => $data['horas'],
+                            'refaccion_nombre' => $data['refaccion_nombre'] ?? null,
+                            'costo_refaccion' => $data['costo_refaccion'] ?? 0,
+                            'subtotal' => $subtotal
+                        ]);
+                    }
+                }
+            }
+
+            // Agregar nuevos servicios
+            if ($request->servicios_nuevos) {
+                foreach ($request->servicios_nuevos as $nuevo) {
+                    $subtotal = ($nuevo['costo_hr'] * $nuevo['horas']) + ($nuevo['costo_refaccion'] ?? 0);
+                    OrdenServicioDetalle::create([
+                        'idorden' => $orden->idorden,
+                        'tipo' => $nuevo['tipo'],
+                        'servicio_nombre' => $nuevo['servicio_nombre'],
+                        'costo_hr' => $nuevo['costo_hr'],
+                        'horas' => $nuevo['horas'],
+                        'refaccion_nombre' => $nuevo['refaccion_nombre'] ?? null,
+                        'costo_refaccion' => $nuevo['costo_refaccion'] ?? 0,
+                        'subtotal' => $subtotal
+                    ]);
+                }
+            }
+
+            // Recalcular total
+            $nuevoTotal = $orden->detalles()->sum('subtotal');
+            $orden->update(['total' => $nuevoTotal]);
+
+            DB::commit();
+
+            return redirect()->route('ordenes.show', $orden->idorden)->with('success', 'Orden actualizada exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
+        }
     }
 
-    public function destroy($id)
+    /*public function destroy($id)
     {
         $orden = OrdenServicio::findOrFail($id);
         $orden->delete();
 
         return redirect()->route('ordenes.index')
             ->with('success', 'Orden eliminada exitosamente');
-    }
+    }*/
 
     public function store(Request $request)
     {
@@ -172,5 +247,28 @@ class OrdenServicioController extends Controller
         $nuevoFolio = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
 
         return response()->json(['folio' => $nuevoFolio]);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $orden = OrdenServicio::findOrFail($id);
+
+            // Verificar permisos: solo admin puede eliminar
+            if (!Auth::user()->esAdmin()) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar órdenes'], 403);
+            }
+
+            // Eliminar detalles primero
+            $orden->detalles()->delete();
+
+            // Eliminar la orden
+            $orden->delete();
+
+            return response()->json(['success' => true, 'message' => 'Orden eliminada']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

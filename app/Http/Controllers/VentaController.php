@@ -5,6 +5,7 @@ use App\Models\Venta;
 use App\Models\VentaDetalle;
 use App\Models\Producto;
 use App\Models\Cliente;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -252,4 +253,164 @@ class VentaController extends Controller
         return response()->json($ventas);
     }
 
+    /**
+     * Mostrar formulario para editar una venta
+     */
+    /**
+     * Mostrar formulario para editar una venta
+     */
+    public function edit($id)
+    {
+        $venta = Venta::with(['cliente', 'detalles.producto'])->findOrFail($id);
+
+        // Verificar permisos: solo admin puede editar
+        if (!Auth::user()->esAdmin()) {
+            return redirect()->route('ventas.historial')->with('error', 'No tienes permiso para editar ventas');
+        }
+
+        $empleados = User::all();
+        $productos = Producto::where('disponible', true)->get();
+
+        return view('ventas.edit', compact('venta', 'empleados', 'productos'));
+    }
+
+    /**
+     * Actualizar una venta
+     */
+    public function update(Request $request, $id)
+    {
+        $venta = Venta::findOrFail($id);
+
+        // Verificar permisos
+        if (!Auth::user()->esAdmin()) {
+            return redirect()->route('ventas.historial')->with('error', 'No tienes permiso para editar ventas');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Actualizar datos de la venta
+            $venta->update([
+                'estado' => $request->estado,
+                'iduser' => $request->iduser
+            ]);
+
+            // Actualizar cliente
+            if ($venta->cliente) {
+                $venta->cliente->update([
+                    'nombre' => $request->cliente_nombre,
+                    'rfc' => $request->cliente_rfc,
+                    'telefono' => $request->cliente_telefono
+                ]);
+            }
+
+            // Eliminar productos marcados
+            if ($request->productos_eliminados) {
+                $eliminados = json_decode($request->productos_eliminados, true);
+                foreach ($eliminados as $idDetalle) {
+                    $detalle = VentaDetalle::find($idDetalle);
+                    if ($detalle) {
+                        // Devolver stock
+                        $producto = Producto::find($detalle->item_id);
+                        if ($producto) {
+                            $producto->stock += $detalle->cantidad;
+                            $producto->save();
+                        }
+                        $detalle->delete();
+                    }
+                }
+            }
+
+            // Actualizar productos existentes
+            if ($request->productos) {
+                foreach ($request->productos as $idDetalle => $productoData) {
+                    $detalle = VentaDetalle::find($idDetalle);
+                    if ($detalle) {
+                        // Devolver stock anterior
+                        $productoAnterior = Producto::find($detalle->item_id);
+                        if ($productoAnterior) {
+                            $productoAnterior->stock += $detalle->cantidad;
+                            $productoAnterior->save();
+                        }
+
+                        // Actualizar detalle
+                        $detalle->update([
+                            'item_id' => $productoData['idprod'],
+                            'cantidad' => $productoData['cantidad'],
+                            'precio_unitario' => $productoData['precio'],
+                            'subtotal' => $productoData['cantidad'] * $productoData['precio']
+                        ]);
+
+                        // Restar nuevo stock
+                        $productoNuevo = Producto::find($productoData['idprod']);
+                        if ($productoNuevo) {
+                            $productoNuevo->stock -= $productoData['cantidad'];
+                            $productoNuevo->save();
+                        }
+                    }
+                }
+            }
+
+            // Agregar nuevos productos
+            if ($request->productos_nuevos) {
+                foreach ($request->productos_nuevos as $nuevo) {
+                    $detalle = VentaDetalle::create([
+                        'idventa' => $venta->idventa,
+                        'item_type' => 'producto',
+                        'item_id' => $nuevo['idprod'],
+                        'cantidad' => $nuevo['cantidad'],
+                        'precio_unitario' => $nuevo['precio'],
+                        'subtotal' => $nuevo['cantidad'] * $nuevo['precio']
+                    ]);
+
+                    // Restar stock
+                    $producto = Producto::find($nuevo['idprod']);
+                    if ($producto) {
+                        $producto->stock -= $nuevo['cantidad'];
+                        $producto->save();
+                    }
+                }
+            }
+
+            // Recalcular totales de la venta
+            $nuevoSubtotal = $venta->detalles()->sum('subtotal');
+            $nuevoIva = $nuevoSubtotal * 0.16;
+            $nuevoTotal = $nuevoSubtotal + $nuevoIva;
+
+            $venta->update([
+                'subtotal' => $nuevoSubtotal,
+                'iva' => $nuevoIva,
+                'total' => $nuevoTotal
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('ventas.historial')->with('success', 'Venta actualizada exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar una venta
+     */
+    public function destroy($id)
+    {
+        $venta = Venta::findOrFail($id);
+
+        // Verificar permisos: solo admin puede eliminar
+        if (!Auth::user()->esAdmin()) {
+            return redirect()->route('ventas.historial')->with('error', 'No tienes permiso para eliminar ventas');
+        }
+
+        // Eliminar detalles primero
+        $venta->detalles()->delete();
+
+        // Eliminar la venta
+        $venta->delete();
+
+        return redirect()->route('ventas.historial')->with('success', 'Venta eliminada exitosamente');
+    }
 }

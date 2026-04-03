@@ -536,29 +536,35 @@
                         <div class="tabla-detalle" style="max-height: 300px;">
                             <table class="table table-sm">
                                 <thead>
-                                60
-                                <th>Folio</th>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Equipo</th>
-                                <th>Servicios</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                                <th width="50"></th>
+                                <tr>
+                                    <th>Folio</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Equipo</th>
+                                    <th>Servicios</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th width="80">Opciones</th>
                                 </tr>
                                 </thead>
-                                <tbody id="tabla_historial">
-                                60
-                                <td colspan="8" class="text-center text-muted py-4">Cargando historial...</td>
+                                <tbody id="tabla_historial_ordenes">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">Cargando historial...</td>
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
+
+                <!-- Campo oculto para el folio -->
+                <input type="hidden" id="folio_actual" value="{{ $nuevoFolio }}">
+
+                <div class="loading-overlay" id="loading_overlay">
+                    <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
 
     <!-- Campo oculto para el folio -->
     <input type="hidden" id="folio_actual" value="{{ $nuevoFolio }}">
@@ -947,14 +953,30 @@
         }
 
         // ==================== HISTORIAL DE ÓRDENES ====================
-        function cargarHistorial() {
-            fetch('{{ route("ordenes.mis-ordenes") }}')
-                .then(response => response.json())
+        function cargarHistorialOrdenes() {
+            console.log('🔵 Cargando historial de órdenes...');
+
+            fetch('/mis-ordenes', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    const tbody = document.getElementById('tabla_historial');
+                    console.log('Datos recibidos:', data);
+
+                    const tbody = document.getElementById('tabla_historial_ordenes');
                     const totalHistorial = document.getElementById('total_historial');
 
-                    if (data.length === 0) {
+                    if (!data || data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No hay órdenes registradas</td></tr>';
                         totalHistorial.textContent = '0';
                         return;
@@ -962,32 +984,55 @@
 
                     let html = '';
                     data.forEach(orden => {
-                        // Determinar clase de estado
                         let estadoClass = '';
+                        let estadoIcono = '';
                         switch(orden.estado) {
-                            case 'Pendiente': estadoClass = 'bg-warning'; break;
-                            case 'En Proceso': estadoClass = 'bg-info'; break;
-                            case 'Completado': estadoClass = 'bg-success'; break;
-                            case 'Entregado': estadoClass = 'bg-primary'; break;
-                            default: estadoClass = 'bg-secondary';
+                            case 'Pendiente':
+                                estadoClass = 'bg-warning';
+                                estadoIcono = 'fa-clock';
+                                break;
+                            case 'En Proceso':
+                                estadoClass = 'bg-info';
+                                estadoIcono = 'fa-spinner';
+                                break;
+                            case 'Completado':
+                                estadoClass = 'bg-success';
+                                estadoIcono = 'fa-check-circle';
+                                break;
+                            case 'Entregado':
+                                estadoClass = 'bg-primary';
+                                estadoIcono = 'fa-truck';
+                                break;
+                            default:
+                                estadoClass = 'bg-secondary';
+                                estadoIcono = 'fa-question';
                         }
 
+                        const fecha = new Date(orden.fecha).toLocaleDateString('es-MX');
+                        const total = parseFloat(orden.total).toFixed(2);
+                        const serviciosCount = orden.detalles_count || 0;
+
                         html += `
-                        <tr>
-                            <td><strong>#${orden.folio}</strong></td>
-                            <td>${new Date(orden.fecha).toLocaleDateString()}</td>
-                            <td>${orden.cliente_nombre}</td>
-                            <td>${orden.equipo_tipo} ${orden.equipo_marca ? '-' + orden.equipo_marca : ''}</td>
-                            <td>${orden.detalles_count || orden.detalles?.length || 0} servicios</td>
-                            <td>$${parseFloat(orden.total).toFixed(2)}</td>
-                            <td><span class="badge ${estadoClass}">${orden.estado}</span></td>
-                            <td>
-                                <a href="/ordenes/${orden.idorden}" class="btn btn-info btn-sm" target="_blank">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    `;
+                <tr>
+                    <td><strong>#${orden.folio}</strong></td>
+                    <td>${fecha}</td>
+                    <td>${orden.cliente_nombre || 'N/A'}</td>
+                    <td>${orden.equipo_tipo || 'N/A'} ${orden.equipo_marca ? '-' + orden.equipo_marca : ''}</td>
+                    <td><span class="badge bg-secondary">${serviciosCount}</span> servicio(s)</td>
+                    <td><strong>$${total}</strong></td>
+                    <td><span class="badge ${estadoClass}"><i class="fas ${estadoIcono} me-1"></i>${orden.estado || 'N/A'}</span></td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <a href="/ordenes/${orden.idorden}" class="btn btn-info btn-sm" target="_blank" title="Ver Orden">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarOrden(${orden.idorden})" title="Eliminar Orden">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
                     });
 
                     tbody.innerHTML = html;
@@ -995,8 +1040,36 @@
                 })
                 .catch(error => {
                     console.error('Error al cargar historial:', error);
-                    document.getElementById('tabla_historial').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar historial</td></tr>';
+                    document.getElementById('tabla_historial_ordenes').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar historial</td></tr>';
                 });
+        }
+
+        function eliminarOrden(ordenId) {
+            if (confirm('¿Estás seguro de eliminar esta orden de servicio? Esta acción no se puede deshacer.')) {
+                console.log('🗑️ Eliminando orden:', ordenId);
+
+                fetch(`/ordenes/${ordenId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('✅ Orden eliminada exitosamente');
+                            cargarHistorialOrdenes(); // Recargar historial
+                        } else {
+                            alert('❌ Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('❌ Error al eliminar la orden');
+                    });
+            }
         }
 
         function actualizarFolio() {
@@ -1019,7 +1092,7 @@
 
         // Cargar historial al iniciar la página
         document.addEventListener('DOMContentLoaded', function() {
-            cargarHistorial();
+            cargarHistorialOrdenes();  // Cambia el nombre si es diferente
             calcularSubtotalPreventivo();
             calcularSubtotalCorrectivo();
         });

@@ -46,6 +46,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/ventas/historial', [VentaController::class, 'historial'])->name('ventas.historial');
     Route::get('/ventas/nuevo-folio', [VentaController::class, 'nuevoFolio'])->name('ventas.nuevo-folio');
     Route::get('/ventas/mis-ventas', [VentaController::class, 'misVentas'])->name('ventas.mis-ventas');
+    // Rutas para editar y eliminar ventas
+    Route::get('/ventas/{id}/edit', [VentaController::class, 'edit'])->name('ventas.edit');
+    Route::put('/ventas/{id}', [VentaController::class, 'update'])->name('ventas.update');
+    Route::delete('/ventas/{id}', [VentaController::class, 'destroy'])->name('ventas.destroy');
 
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
@@ -64,7 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('ordenes', OrdenServicioController::class);
     Route::get('/mis-ordenes', [OrdenServicioController::class, 'misOrdenes'])->name('ordenes.mis-ordenes');
     Route::get('/nuevo-folio-orden', [OrdenServicioController::class, 'nuevoFolio'])->name('ordenes.nuevo-folio');
-
+    Route::delete('/ordenes/{id}', [OrdenServicioController::class, 'destroy'])->name('ordenes.destroy');
     // Rutas para marcas y modelos (API)
         Route::get('/get-marcas-por-tipo', [OrdenServicioController::class, 'getMarcasPorTipo']);
         Route::get('/get-modelos-por-marca', [OrdenServicioController::class, 'getModelosPorMarca']);
