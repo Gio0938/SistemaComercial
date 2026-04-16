@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Marca;
-use App\Models\User;
 use App\Models\Modelo;
 
 class OrdenServicioController extends Controller
 {
     public function index()
     {
+        // ✅ Cargar detalles para calcular totales preventivo/correctivo en la vista
         $ordenes = OrdenServicio::with('detalles')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -25,39 +25,29 @@ class OrdenServicioController extends Controller
     public function create()
     {
         $ultimoFolio = OrdenServicio::max('folio');
-        $nuevoFolio = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
-
-        // Obtener todas las marcas (para el select)
-        $marcas = Marca::orderBy('nombre')->get();
+        $nuevoFolio  = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
+        $marcas      = Marca::orderBy('nombre')->get();
 
         return view('ordenes.create', compact('nuevoFolio', 'marcas'));
     }
 
-// API: Obtener marcas por tipo de equipo
     public function getMarcasPorTipo(Request $request)
     {
-        $tipoEquipo = $request->tipo_equipo;
-
-        $marcas = Marca::where('tipo_equipo', $tipoEquipo)
+        $marcas = Marca::where('tipo_equipo', $request->tipo_equipo)
             ->orderBy('nombre')
             ->get(['idmarca', 'nombre']);
 
         return response()->json($marcas);
     }
 
-// API: Obtener modelos por marca
     public function getModelosPorMarca(Request $request)
     {
-        $idmarca = $request->idmarca;
-
-        $modelos = Modelo::where('idmarca', $idmarca)
+        $modelos = Modelo::where('idmarca', $request->idmarca)
             ->orderBy('nombre')
             ->get(['idmodelo', 'nombre']);
 
         return response()->json($modelos);
     }
-
-
 
     public function show($id)
     {
@@ -73,156 +63,150 @@ class OrdenServicioController extends Controller
             return redirect()->route('ordenes.index')->with('error', 'No tienes permiso para editar');
         }
 
-        $usuarios = User::all();
+        $marcas     = Marca::orderBy('nombre')->get();
+        $nuevoFolio = $orden->folio;
 
-        return view('ordenes.edit', compact('orden', 'usuarios'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $orden = OrdenServicio::findOrFail($id);
-
-        if (!Auth::user()->esAdmin()) {
-            return redirect()->route('ordenes.index')->with('error', 'No tienes permiso para editar');
+        // ✅ Construir carrito con TODOS los campos que necesita el blade JS
+        $carritoExistente = [];
+        foreach ($orden->detalles as $detalle) {
+            $carritoExistente[] = [
+                'tipo'             => $detalle->tipo,           // 'preventivo' o 'correctivo'
+                'tipo_mostrar'     => $detalle->tipo === 'preventivo' ? 'Preventivo' : 'Correctivo',
+                'servicio_nombre'  => $detalle->servicio_nombre,
+                'costo_hr'         => (float) $detalle->costo_hr,
+                'horas'            => (float) $detalle->horas,
+                'refaccion_nombre' => $detalle->refaccion_nombre,
+                'costo_refaccion'  => (float) $detalle->costo_refaccion,
+                'diagnostico'      => $detalle->diagnostico ?? '',
+                'subtotal'         => (float) $detalle->subtotal,
+            ];
         }
 
-        DB::beginTransaction();
-
-        try {
-            // Actualizar datos principales
-            $orden->update([
-                'estado' => $request->estado,
-                'tecnico_nombre' => $request->tecnico_nombre,
-                'cliente_nombre' => $request->cliente_nombre,
-                'cliente_rfc' => $request->cliente_rfc,
-                'cliente_telefono' => $request->cliente_telefono,
-                'cliente_email' => $request->cliente_email,
-                'equipo_tipo' => $request->equipo_tipo,
-                'equipo_marca' => $request->equipo_marca,
-                'equipo_modelo' => $request->equipo_modelo,
-                'equipo_serie' => $request->equipo_serie,
-                'especificaciones' => $request->especificaciones,
-                'diagnostico' => $request->diagnostico
-            ]);
-
-            // Eliminar servicios marcados
-            if ($request->servicios_eliminados) {
-                $eliminados = json_decode($request->servicios_eliminados, true);
-                foreach ($eliminados as $idDetalle) {
-                    OrdenServicioDetalle::find($idDetalle)->delete();
-                }
-            }
-
-            // Actualizar servicios existentes
-            if ($request->servicios) {
-                foreach ($request->servicios as $idDetalle => $data) {
-                    $detalle = OrdenServicioDetalle::find($idDetalle);
-                    if ($detalle) {
-                        $subtotal = ($data['costo_hr'] * $data['horas']) + ($data['costo_refaccion'] ?? 0);
-                        $detalle->update([
-                            'tipo' => $data['tipo'],
-                            'servicio_nombre' => $data['servicio_nombre'],
-                            'costo_hr' => $data['costo_hr'],
-                            'horas' => $data['horas'],
-                            'refaccion_nombre' => $data['refaccion_nombre'] ?? null,
-                            'costo_refaccion' => $data['costo_refaccion'] ?? 0,
-                            'subtotal' => $subtotal
-                        ]);
-                    }
-                }
-            }
-
-            // Agregar nuevos servicios
-            if ($request->servicios_nuevos) {
-                foreach ($request->servicios_nuevos as $nuevo) {
-                    $subtotal = ($nuevo['costo_hr'] * $nuevo['horas']) + ($nuevo['costo_refaccion'] ?? 0);
-                    OrdenServicioDetalle::create([
-                        'idorden' => $orden->idorden,
-                        'tipo' => $nuevo['tipo'],
-                        'servicio_nombre' => $nuevo['servicio_nombre'],
-                        'costo_hr' => $nuevo['costo_hr'],
-                        'horas' => $nuevo['horas'],
-                        'refaccion_nombre' => $nuevo['refaccion_nombre'] ?? null,
-                        'costo_refaccion' => $nuevo['costo_refaccion'] ?? 0,
-                        'subtotal' => $subtotal
-                    ]);
-                }
-            }
-
-            // Recalcular total
-            $nuevoTotal = $orden->detalles()->sum('subtotal');
-            $orden->update(['total' => $nuevoTotal]);
-
-            DB::commit();
-
-            return redirect()->route('ordenes.show', $orden->idorden)->with('success', 'Orden actualizada exitosamente');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
-        }
+        return view('ordenes.create', compact('orden', 'marcas', 'nuevoFolio', 'carritoExistente'));
     }
-
-    /*public function destroy($id)
-    {
-        $orden = OrdenServicio::findOrFail($id);
-        $orden->delete();
-
-        return redirect()->route('ordenes.index')
-            ->with('success', 'Orden eliminada exitosamente');
-    }*/
 
     public function store(Request $request)
     {
         $request->validate([
             'cliente_nombre' => 'required|string',
-            'equipo_tipo' => 'required',
-            'detalles' => 'required|array|min:1',
-            'total' => 'required|numeric'
+            'equipo_tipo'    => 'required',
+            'detalles'       => 'required|array|min:1',
+            'total'          => 'required|numeric',
         ]);
 
         DB::beginTransaction();
 
         try {
             $orden = OrdenServicio::create([
-                'folio' => $request->folio,
-                'fecha' => now(),
-                'tecnico_nombre' => Auth::user()->name,
-                'tecnico_email' => Auth::user()->email,
-                'cliente_nombre' => $request->cliente_nombre,
-                'cliente_rfc' => $request->cliente_rfc,
-                'cliente_email' => $request->cliente_email,
+                'folio'            => $request->folio,
+                'fecha'            => now(),
+                'tecnico_nombre'   => Auth::user()->name,
+                'tecnico_email'    => Auth::user()->email,
+                'cliente_nombre'   => $request->cliente_nombre,
+                'cliente_rfc'      => $request->cliente_rfc,
+                'cliente_email'    => $request->cliente_email,
                 'cliente_telefono' => $request->cliente_telefono,
-                'equipo_tipo' => $request->equipo_tipo,
-                'equipo_marca' => $request->equipo_marca,
-                'equipo_modelo' => $request->equipo_modelo,
-                'equipo_serie' => $request->equipo_serie,
+                'equipo_tipo'      => $request->equipo_tipo,
+                'equipo_marca'     => $request->equipo_marca,
+                'equipo_modelo'    => $request->equipo_modelo,
+                'equipo_serie'     => $request->equipo_serie,
                 'especificaciones' => $request->especificaciones,
-                'diagnostico' => $request->diagnostico,
-                'estado' => 'Pendiente',
-                'total' => $request->total
+                'diagnostico'      => $request->diagnostico,
+                'estado'           => 'Pendiente',
+                'total'            => $request->total,
             ]);
 
             foreach ($request->detalles as $detalle) {
                 OrdenServicioDetalle::create([
-                    'idorden' => $orden->idorden,
-                    'tipo' => strtolower($detalle['tipo']),
-                    'servicio_nombre' => $detalle['servicio_nombre'],
-                    'costo_hr' => $detalle['costo_hr'],
-                    'horas' => $detalle['horas'],
-                    'refaccion_nombre' => $detalle['refaccion_nombre'],
-                    'costo_refaccion' => $detalle['costo_refaccion'],
-                    'subtotal' => $detalle['subtotal']
+                    'idorden'          => $orden->idorden,
+                    'tipo'             => strtolower($detalle['tipo']),
+                    'servicio_nombre'  => $detalle['servicio_nombre'],
+                    'costo_hr'         => $detalle['costo_hr'],
+                    'horas'            => $detalle['horas'],
+                    'refaccion_nombre' => $detalle['refaccion_nombre'] ?? null,
+                    'costo_refaccion'  => $detalle['costo_refaccion'] ?? 0,
+                    'diagnostico'      => $detalle['diagnostico'] ?? null,  // ✅ guardar diagnóstico por detalle
+                    'subtotal'         => $detalle['subtotal'],
                 ]);
             }
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'Orden guardada']);
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Orden guardada',
+                'orden_id' => $orden->idorden,
+                'folio'    => $orden->folio,
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $orden = OrdenServicio::findOrFail($id);
+
+            if (!Auth::user()->esAdmin()) {
+                return response()->json(['success' => false, 'message' => 'No tienes permiso'], 403);
+            }
+
+            DB::beginTransaction();
+
+            // Eliminar detalles actuales
+            $orden->detalles()->delete();
+
+            // Insertar nuevos detalles con subtotal recalculado
+            $total = 0;
+            foreach ($request->detalles as $detalle) {
+                $subtotal = ((float) $detalle['costo_hr'] * (float) $detalle['horas'])
+                    + ((float) ($detalle['costo_refaccion'] ?? 0));
+                $total   += $subtotal;
+
+                OrdenServicioDetalle::create([
+                    'idorden'          => $orden->idorden,
+                    'tipo'             => strtolower($detalle['tipo']),  // ✅ normalizar a minúscula
+                    'servicio_nombre'  => $detalle['servicio_nombre'],
+                    'costo_hr'         => $detalle['costo_hr'],
+                    'horas'            => $detalle['horas'],
+                    'refaccion_nombre' => $detalle['refaccion_nombre'] ?? null,
+                    'costo_refaccion'  => $detalle['costo_refaccion'] ?? 0,
+                    'diagnostico'      => $detalle['diagnostico'] ?? null,  // ✅ guardar diagnóstico por detalle
+                    'subtotal'         => $subtotal,
+                ]);
+            }
+
+            // Actualizar todos los campos de la orden
+            $orden->update([
+                'estado'           => $request->estado ?? $orden->estado,
+                'cliente_nombre'   => $request->cliente_nombre,
+                'cliente_rfc'      => $request->cliente_rfc,
+                'cliente_telefono' => $request->cliente_telefono,
+                'cliente_email'    => $request->cliente_email,
+                'equipo_tipo'      => $request->equipo_tipo,
+                'equipo_marca'     => $request->equipo_marca,
+                'equipo_modelo'    => $request->equipo_modelo,
+                'equipo_serie'     => $request->equipo_serie,
+                'especificaciones' => $request->especificaciones,
+                'diagnostico'      => $request->diagnostico,
+                'total'            => $total,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Orden actualizada exitosamente',
+                'folio'    => $orden->folio,
+                'orden_id' => $orden->idorden,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 
@@ -244,7 +228,7 @@ class OrdenServicioController extends Controller
     public function nuevoFolio()
     {
         $ultimoFolio = OrdenServicio::max('folio');
-        $nuevoFolio = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
+        $nuevoFolio  = $ultimoFolio ? str_pad((int)$ultimoFolio + 1, 6, '0', STR_PAD_LEFT) : '000001';
 
         return response()->json(['folio' => $nuevoFolio]);
     }
@@ -254,15 +238,11 @@ class OrdenServicioController extends Controller
         try {
             $orden = OrdenServicio::findOrFail($id);
 
-            // Verificar permisos: solo admin puede eliminar
             if (!Auth::user()->esAdmin()) {
-                return response()->json(['success' => false, 'message' => 'No tienes permiso para eliminar órdenes'], 403);
+                return response()->json(['success' => false, 'message' => 'No tienes permiso'], 403);
             }
 
-            // Eliminar detalles primero
             $orden->detalles()->delete();
-
-            // Eliminar la orden
             $orden->delete();
 
             return response()->json(['success' => true, 'message' => 'Orden eliminada']);

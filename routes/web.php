@@ -64,12 +64,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/reportes/servicios/pdf', [ReporteController::class, 'exportarServiciosPDF'])->name('reportes.exportar-servicios-pdf');
     Route::get('/reportes/promociones/pdf', [ReporteController::class, 'exportarPromocionesPDF'])->name('reportes.exportar-promociones-pdf');
 
-// Órdenes de Servicio
+    /* Órdenes de Servicio
     Route::resource('ordenes', OrdenServicioController::class);
     Route::get('/mis-ordenes', [OrdenServicioController::class, 'misOrdenes'])->name('ordenes.mis-ordenes');
     Route::get('/nuevo-folio-orden', [OrdenServicioController::class, 'nuevoFolio'])->name('ordenes.nuevo-folio');
     Route::delete('/ordenes/{id}', [OrdenServicioController::class, 'destroy'])->name('ordenes.destroy');
-    // Rutas para marcas y modelos (API)
-        Route::get('/get-marcas-por-tipo', [OrdenServicioController::class, 'getMarcasPorTipo']);
-        Route::get('/get-modelos-por-marca', [OrdenServicioController::class, 'getModelosPorMarca']);
-    });
+    Route::get('/get-marcas-por-tipo', [OrdenServicioController::class, 'getMarcasPorTipo']);
+    Route::get('/get-modelos-por-marca', [OrdenServicioController::class, 'getModelosPorMarca'])*/
+
+    // Órdenes de Servicio
+    Route::get('/ordenes', [OrdenServicioController::class, 'index'])->name('ordenes.index');
+    Route::get('/ordenes/create', [OrdenServicioController::class, 'create'])->name('ordenes.create');
+    Route::post('/ordenes', [OrdenServicioController::class, 'store'])->name('ordenes.store');
+    Route::get('/ordenes/{id}', [OrdenServicioController::class, 'show'])->name('ordenes.show');
+    Route::get('/ordenes/{id}/edit', [OrdenServicioController::class, 'edit'])->name('ordenes.edit');
+    Route::put('/ordenes/{id}', [OrdenServicioController::class, 'update'])->name('ordenes.update');
+    Route::delete('/ordenes/{id}', [OrdenServicioController::class, 'destroy'])->name('ordenes.destroy');
+    Route::resource('ordenes', OrdenServicioController::class);
+
+    // Rutas adicionales
+    Route::get('/mis-ordenes', [OrdenServicioController::class, 'misOrdenes']);
+    Route::get('/ordenes/{id}/detalles', [OrdenServicioController::class, 'getDetalles'])->name('ordenes.detalles');
+    Route::get('/ordenes/nuevo-folio', [OrdenServicioController::class, 'nuevoFolio'])->name('ordenes.nuevo-folio');
+    Route::get('/get-marcas-por-tipo', [OrdenServicioController::class, 'getMarcasPorTipo']);
+    Route::get('/get-modelos-por-marca', [OrdenServicioController::class, 'getModelosPorMarca']);
+});

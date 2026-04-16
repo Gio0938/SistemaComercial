@@ -27,6 +27,19 @@
             border: none;
         }
 
+        /* Banner de modo edición */
+        .banner-edicion {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
         .tipo-venta-group {
             display: flex;
             gap: 15px;
@@ -199,6 +212,18 @@
 
 @section('content')
     <div class="container-fluid">
+
+        {{-- ✅ BANNER DE MODO EDICIÓN --}}
+        @if(isset($venta))
+            <div class="banner-edicion">
+                <i class="fas fa-edit fa-lg"></i>
+                <span>Modo Edición — Venta #{{ $venta->folio }}</span>
+                <a href="{{ route('ventas.historial') }}" class="btn btn-light btn-sm ms-auto">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al historial
+                </a>
+            </div>
+        @endif
+
         <!-- Header con información del empleado -->
         <div class="row mb-4">
             <div class="col-12">
@@ -208,7 +233,11 @@
                             <div class="col-md-6">
                                 <h4 class="mb-0">
                                     <i class="fas fa-laptop-code me-2"></i>
-                                    Venta de Computadoras
+                                    @if(isset($venta))
+                                        Editando Venta #{{ $venta->folio }}
+                                    @else
+                                        Venta de Computadoras
+                                    @endif
                                 </h4>
                             </div>
                             <div class="col-md-6 text-end">
@@ -249,21 +278,27 @@
                         <div class="row">
                             <div class="col-md-12 mb-2">
                                 <label class="form-label small">Nombre</label>
-                                <input type="text" class="form-control" id="cliente_nombre" placeholder="Nombre del cliente">
+                                <input type="text" class="form-control" id="cliente_nombre"
+                                       placeholder="Nombre del cliente"
+                                       value="{{ isset($venta) && $venta->cliente ? $venta->cliente->nombre : '' }}">
                             </div>
                             <div class="col-md-6 mb-2">
                                 <label class="form-label small">RFC</label>
-                                <input type="text" class="form-control" id="cliente_rfc" placeholder="RFC (opcional)">
+                                <input type="text" class="form-control" id="cliente_rfc"
+                                       placeholder="RFC (opcional)"
+                                       value="{{ isset($venta) && $venta->cliente ? $venta->cliente->rfc : '' }}">
                             </div>
                             <div class="col-md-6 mb-2">
                                 <label class="form-label small">Teléfono</label>
-                                <input type="tel" class="form-control" id="cliente_telefono" placeholder="Teléfono">
+                                <input type="tel" class="form-control" id="cliente_telefono"
+                                       placeholder="Teléfono"
+                                       value="{{ isset($venta) && $venta->cliente ? $venta->cliente->telefono : '' }}">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tipo de Venta - Radio Button -->
+                <!-- Tipo de Venta -->
                 <div class="card pos-card">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -426,7 +461,7 @@
 
             <!-- Panel Derecho -->
             <div class="col-md-7">
-                <!-- SOLO UNA TABLA: Productos Agregados (Carrito actual) -->
+                <!-- Carrito -->
                 <div class="card pos-card">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -444,11 +479,11 @@
                                     <th>Precio</th>
                                     <th>Garantía</th>
                                     <th>Total</th>
-                                    <th width="30">Opciones</th>
+                                    <th width="30">Quitar</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tabla_detalle">
-                                <tr><td colspan="8" class="text-center text-muted py-4">No hay productos agregados</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted py-4">No hay productos agregados</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -462,10 +497,15 @@
                                 </div>
                             </div>
                         </div>
+
+                        {{-- ✅ SIEMPRE presente, vacío si es nueva venta --}}
+                        <input type="hidden" id="venta_id" value="{{ isset($venta) ? $venta->idventa : '' }}">
+
                         <div class="row g-2">
                             <div class="col-md-6">
                                 <button class="btn btn-success w-100 py-2" onclick="procesarVenta(event)">
-                                    <i class="fas fa-check-circle me-1"></i> PROCESAR VENTA
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    {{ isset($venta) ? 'GUARDAR CAMBIOS' : 'PROCESAR VENTA' }}
                                 </button>
                             </div>
                             <div class="col-md-6">
@@ -477,7 +517,7 @@
                     </div>
                 </div>
 
-                <!-- ========== HISTORIAL DE VENTAS (DEBAJO) ========== -->
+                {{-- ✅ HISTORIAL DE VENTAS - AHORA TAMBIÉN EN MODO EDICIÓN --}}
                 <div class="card pos-card mt-3">
                     <div class="card-header">
                         <h5 class="mb-0">
@@ -498,21 +538,22 @@
                                     <th>Total</th>
                                     <th>Especificaciones</th>
                                     <th>Duración</th>
-                                    <th width="80">Opciones</th>
+                                    <th width="100">Opciones</th>
                                 </tr>
                                 </thead>
                                 <tbody id="tabla_historial">
-                                <tr><td colspan="8" class="text-center text-muted py-4">Cargando historial...</td></tr>
+                                <td><td colspan="8" class="text-center text-muted py-4">Cargando historial...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-
-
-    <!-- Campo oculto para el folio actual -->
     <input type="hidden" id="folio_actual" value="{{ $nuevoFolio }}">
+
     <div class="loading-overlay" id="loading_overlay">
         <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Cargando...</span>
@@ -522,218 +563,219 @@
 
 @push('scripts')
     <script>
-        let carrito = [];
-        let totalVenta = 0;
+        // ─────────────────────────────────────────────
+        // VARIABLES GLOBALES
+        // ─────────────────────────────────────────────
+        let carrito      = @json($carritoExistente ?? []);
+        let totalVenta   = carrito.reduce((sum, item) => sum + item.subtotal, 0);
         let productosData = @json($productos);
 
-        // Elementos DOM
-        const tipoPeriferico = document.getElementById('tipo_periferico');
-        const tipoEquipo = document.getElementById('tipo_equipo');
-        const panelPeriferico = document.getElementById('panel_periferico');
-        const panelEquipo = document.getElementById('panel_equipo');
+        // ¿Estamos editando una venta existente?
+        const ventaId    = document.getElementById('venta_id').value;
+        const esEdicion  = ventaId !== '';
 
-        // PANEL PERIFÉRICO
-        const categoriaSelect = document.getElementById('categoria_periferico');
-        const productoPeriferico = document.getElementById('producto_periferico');
-        const cantidadPeriferico = document.getElementById('cantidad_periferico');
-        const precioPeriferico = document.getElementById('precio_periferico');
-        const totalPeriferico = document.getElementById('total_periferico');
+        console.log('Modo edición:', esEdicion, '| ventaId:', ventaId);
+        console.log('Carrito inicial:', carrito);
 
-        // PANEL EQUIPO
-        const tipoEquipoSelect = document.getElementById('tipo_equipo_select');
-        const productoEquipo = document.getElementById('producto_equipo');
-        const cantidadEquipo = document.getElementById('cantidad_equipo');
-        const garantiaSi = document.getElementById('garantia_si');
-        const garantiaNo = document.getElementById('garantia_no');
-        const duracionGroup = document.getElementById('duracion_group');
-        const duracionEquipo = document.getElementById('duracion_equipo');
-        const precioBaseEquipo = document.getElementById('precio_base_equipo');
+        // ─────────────────────────────────────────────
+        // ELEMENTOS DOM
+        // ─────────────────────────────────────────────
+        const tipoPeriferico   = document.getElementById('tipo_periferico');
+        const tipoEquipo       = document.getElementById('tipo_equipo');
+        const panelPeriferico  = document.getElementById('panel_periferico');
+        const panelEquipo      = document.getElementById('panel_equipo');
+
+        const categoriaSelect      = document.getElementById('categoria_periferico');
+        const productoPeriferico   = document.getElementById('producto_periferico');
+        const cantidadPeriferico   = document.getElementById('cantidad_periferico');
+        const precioPeriferico     = document.getElementById('precio_periferico');
+        const totalPeriferico      = document.getElementById('total_periferico');
+
+        const tipoEquipoSelect  = document.getElementById('tipo_equipo_select');
+        const productoEquipo    = document.getElementById('producto_equipo');
+        const cantidadEquipo    = document.getElementById('cantidad_equipo');
+        const garantiaSi        = document.getElementById('garantia_si');
+        const garantiaNo        = document.getElementById('garantia_no');
+        const duracionGroup     = document.getElementById('duracion_group');
+        const duracionEquipo    = document.getElementById('duracion_equipo');
+        const precioBaseEquipo  = document.getElementById('precio_base_equipo');
         const precioFinalEquipo = document.getElementById('precio_final_equipo');
-        const totalEquipo = document.getElementById('total_equipo');
+        const totalEquipo       = document.getElementById('total_equipo');
 
-        // Cambiar paneles
-        tipoPeriferico.addEventListener('change', function() {
+        // ─────────────────────────────────────────────
+        // CAMBIAR PANELES
+        // ─────────────────────────────────────────────
+        tipoPeriferico.addEventListener('change', function () {
             if (this.checked) {
                 panelPeriferico.style.display = 'block';
-                panelEquipo.style.display = 'none';
+                panelEquipo.style.display     = 'none';
                 resetearFormularioPeriferico();
             }
         });
 
-        tipoEquipo.addEventListener('change', function() {
+        tipoEquipo.addEventListener('change', function () {
             if (this.checked) {
                 panelPeriferico.style.display = 'none';
-                panelEquipo.style.display = 'block';
+                panelEquipo.style.display     = 'block';
                 resetearFormularioEquipo();
             }
         });
 
-        // ==================== PERIFÉRICO ====================
-        categoriaSelect.addEventListener('change', function() {
+        // ─────────────────────────────────────────────
+        // PANEL PERIFÉRICO
+        // ─────────────────────────────────────────────
+        categoriaSelect.addEventListener('change', function () {
             const categoria = this.value;
 
             if (!categoria) {
                 productoPeriferico.innerHTML = '<option value="">Seleccione una categoría primero</option>';
-                productoPeriferico.disabled = true;
-                precioPeriferico.value = '';
-                totalPeriferico.value = '$0.00';
+                productoPeriferico.disabled  = true;
+                precioPeriferico.value       = '';
+                totalPeriferico.value        = '$0.00';
                 return;
             }
 
-            const productosFiltrados = productosData.filter(p => p.categoria === categoria);
-
+            const filtrados = productosData.filter(p => p.categoria === categoria);
             productoPeriferico.innerHTML = '<option value="">Seleccione un producto...</option>';
 
-            productosFiltrados.forEach(producto => {
-                productoPeriferico.innerHTML += `<option value="${producto.idprod}" data-precio="${producto.precio}" data-stock="${producto.stock}" data-categoria="${producto.categoria}">
-                ${producto.nombre} - $${producto.precio} (Stock: ${producto.stock})
-            </option>`;
+            filtrados.forEach(p => {
+                productoPeriferico.innerHTML +=
+                    `<option value="${p.idprod}" data-precio="${p.precio}" data-stock="${p.stock}">
+                        ${p.nombre} - $${p.precio} (Stock: ${p.stock})
+                    </option>`;
             });
 
             productoPeriferico.disabled = false;
         });
 
-        productoPeriferico.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const precio = selectedOption.getAttribute('data-precio');
-
+        productoPeriferico.addEventListener('change', function () {
+            const precio = this.options[this.selectedIndex].getAttribute('data-precio');
             if (precio) {
                 precioPeriferico.value = `$${parseFloat(precio).toFixed(2)}`;
                 calcularTotalPeriferico();
             } else {
                 precioPeriferico.value = '';
-                totalPeriferico.value = '$0.00';
+                totalPeriferico.value  = '$0.00';
             }
         });
 
         function calcularTotalPeriferico() {
             const cantidad = parseInt(cantidadPeriferico.value) || 0;
-            const precioTexto = precioPeriferico.value;
-            const precio = parseFloat(precioTexto.replace('$', '')) || 0;
-            const total = cantidad * precio;
-            totalPeriferico.value = `$${total.toFixed(2)}`;
+            const precio   = parseFloat(precioPeriferico.value.replace('$', '')) || 0;
+            totalPeriferico.value = `$${(cantidad * precio).toFixed(2)}`;
         }
 
         cantidadPeriferico.addEventListener('input', calcularTotalPeriferico);
 
         function agregarPeriferico() {
-            const categoria = categoriaSelect.value;
-            const productoOption = productoPeriferico.options[productoPeriferico.selectedIndex];
-            const productoId = productoPeriferico.value;
-            const productoNombre = productoOption.text?.split(' - ')[0];
-            const cantidad = parseInt(cantidadPeriferico.value);
-            const precioTexto = precioPeriferico.value;
-            const precio = parseFloat(precioTexto.replace('$', ''));
+            const categoria     = categoriaSelect.value;
+            const opt           = productoPeriferico.options[productoPeriferico.selectedIndex];
+            const productoId    = productoPeriferico.value;
+            const productoNombre = opt.text?.split(' - ')[0];
+            const cantidad      = parseInt(cantidadPeriferico.value);
+            const precio        = parseFloat(precioPeriferico.value.replace('$', ''));
             const especificaciones = document.getElementById('especificaciones_periferico').value || '-';
 
-            if (!categoria) {
-                alert('❌ Seleccione una categoría');
+            if (!categoria || !productoId || isNaN(cantidad) || cantidad < 1 || isNaN(precio)) {
+                alert('❌ Complete todos los campos requeridos');
                 return;
             }
 
-            if (!productoId) {
-                alert('❌ Seleccione un producto');
-                return;
+            const existe = carrito.find(item => item.idprod == productoId);
+            if (existe) {
+                existe.cantidad += cantidad;
+                existe.subtotal  = existe.cantidad * existe.precio;
+            } else {
+                carrito.push({
+                    idprod:            parseInt(productoId),
+                    tipo:              'Periférico',
+                    nombre:            productoNombre,
+                    categoria:         categoria,
+                    cantidad:          cantidad,
+                    precio:            precio,
+                    subtotal:          cantidad * precio,
+                    garantia:          false,
+                    duracion_garantia: null,
+                    especificaciones:  especificaciones
+                });
             }
-
-            if (isNaN(cantidad) || cantidad < 1) {
-                alert('❌ Cantidad inválida');
-                return;
-            }
-
-            const subtotal = cantidad * precio;
-
-            carrito.push({
-                tipo: 'Periférico',
-                nombre: productoNombre,
-                categoria: categoria,
-                cantidad: cantidad,
-                precio: precio,
-                subtotal: subtotal,
-                garantia: false,
-                duracion_garantia: null,
-                especificaciones: especificaciones
-            });
 
             calcularTotalGeneral();
             actualizarTabla();
             resetearFormularioPeriferico();
-            alert(`✅ ${productoNombre} agregado al carrito`);
+            alert(`✅ ${productoNombre} agregado`);
         }
 
         function resetearFormularioPeriferico() {
-            categoriaSelect.value = '';
+            categoriaSelect.value    = '';
             productoPeriferico.innerHTML = '<option value="">Seleccione una categoría primero</option>';
-            productoPeriferico.disabled = true;
+            productoPeriferico.disabled  = true;
             cantidadPeriferico.value = '1';
-            precioPeriferico.value = '';
-            totalPeriferico.value = '$0.00';
+            precioPeriferico.value   = '';
+            totalPeriferico.value    = '$0.00';
             document.getElementById('especificaciones_periferico').value = '';
         }
 
-        // ==================== EQUIPO ====================
-        tipoEquipoSelect.addEventListener('change', function() {
+        // ─────────────────────────────────────────────
+        // PANEL EQUIPO
+        // ─────────────────────────────────────────────
+        tipoEquipoSelect.addEventListener('change', function () {
             const tipo = this.value;
 
             if (!tipo) {
                 productoEquipo.innerHTML = '<option value="">Seleccione un tipo de equipo primero</option>';
-                productoEquipo.disabled = true;
-                precioBaseEquipo.value = '';
-                precioFinalEquipo.value = '$0.00';
-                totalEquipo.value = '$0.00';
+                productoEquipo.disabled  = true;
+                precioBaseEquipo.value   = '';
+                precioFinalEquipo.value  = '$0.00';
+                totalEquipo.value        = '$0.00';
                 return;
             }
 
-            const productosFiltrados = productosData.filter(p => p.categoria === tipo);
-
+            const filtrados = productosData.filter(p => p.categoria === tipo);
             productoEquipo.innerHTML = '<option value="">Seleccione un equipo...</option>';
 
-            productosFiltrados.forEach(producto => {
-                productoEquipo.innerHTML += `<option value="${producto.idprod}" data-precio="${producto.precio}" data-stock="${producto.stock}">
-                ${producto.nombre} - $${producto.precio} (Stock: ${producto.stock})
-            </option>`;
+            filtrados.forEach(p => {
+                productoEquipo.innerHTML +=
+                    `<option value="${p.idprod}" data-precio="${p.precio}" data-stock="${p.stock}">
+                        ${p.nombre} - $${p.precio} (Stock: ${p.stock})
+                    </option>`;
             });
 
             productoEquipo.disabled = false;
         });
 
-        productoEquipo.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const precio = selectedOption.getAttribute('data-precio');
-
+        productoEquipo.addEventListener('change', function () {
+            const precio = this.options[this.selectedIndex].getAttribute('data-precio');
             if (precio) {
                 precioBaseEquipo.value = `$${parseFloat(precio).toFixed(2)}`;
                 calcularPrecioFinalEquipo();
             } else {
-                precioBaseEquipo.value = '';
+                precioBaseEquipo.value  = '';
                 precioFinalEquipo.value = '$0.00';
-                totalEquipo.value = '$0.00';
+                totalEquipo.value       = '$0.00';
             }
         });
 
-        garantiaSi.addEventListener('change', function() {
+        garantiaSi.addEventListener('change', function () {
             duracionGroup.style.display = 'block';
             calcularPrecioFinalEquipo();
         });
 
-        garantiaNo.addEventListener('change', function() {
+        garantiaNo.addEventListener('change', function () {
             duracionGroup.style.display = 'none';
             calcularPrecioFinalEquipo();
         });
 
         function calcularPrecioFinalEquipo() {
-            const precioTexto = precioBaseEquipo.value;
-            const precioBase = parseFloat(precioTexto.replace('$', '')) || 0;
+            const precioBase    = parseFloat(precioBaseEquipo.value.replace('$', '')) || 0;
             const tieneGarantia = garantiaSi.checked;
-            let precioFinal = precioBase;
+            let precioFinal     = precioBase;
 
             if (tieneGarantia) {
                 const anios = parseInt(duracionEquipo.value);
-                switch(anios) {
-                    case 1: precioFinal = precioBase * 1.10; break;
-                    case 2: precioFinal = precioBase * 1.20; break;
-                    case 3: precioFinal = precioBase * 1.30; break;
-                }
+                if (anios === 1) precioFinal = precioBase * 1.10;
+                if (anios === 2) precioFinal = precioBase * 1.20;
+                if (anios === 3) precioFinal = precioBase * 1.30;
             }
 
             precioFinalEquipo.value = `$${precioFinal.toFixed(2)}`;
@@ -742,129 +784,122 @@
 
         function calcularTotalEquipo() {
             const cantidad = parseInt(cantidadEquipo.value) || 0;
-            const precioTexto = precioFinalEquipo.value;
-            const precio = parseFloat(precioTexto.replace('$', '')) || 0;
-            const total = cantidad * precio;
-            totalEquipo.value = `$${total.toFixed(2)}`;
+            const precio   = parseFloat(precioFinalEquipo.value.replace('$', '')) || 0;
+            totalEquipo.value = `$${(cantidad * precio).toFixed(2)}`;
         }
 
         duracionEquipo.addEventListener('change', calcularPrecioFinalEquipo);
         cantidadEquipo.addEventListener('input', calcularTotalEquipo);
 
         function agregarEquipo() {
-            const tipoEquipoVal = tipoEquipoSelect.value;
-            const productoOption = productoEquipo.options[productoEquipo.selectedIndex];
-            const productoId = productoEquipo.value;
-            const productoNombre = productoOption.text?.split(' - ')[0];
-            const cantidad = parseInt(cantidadEquipo.value);
-            const tieneGarantia = garantiaSi.checked;
-            let duracionTexto = null;
-
-            if (tieneGarantia) {
-                const anios = duracionEquipo.value;
-                switch(anios) {
-                    case '1': duracionTexto = '1 año de soporte'; break;
-                    case '2': duracionTexto = '2 años de soporte'; break;
-                    case '3': duracionTexto = '3 años de soporte'; break;
-                }
-            }
-
-            const precioTexto = precioFinalEquipo.value;
-            const precio = parseFloat(precioTexto.replace('$', ''));
+            const tipoVal        = tipoEquipoSelect.value;
+            const opt            = productoEquipo.options[productoEquipo.selectedIndex];
+            const productoId     = productoEquipo.value;
+            const productoNombre = opt.text?.split(' - ')[0];
+            const cantidad       = parseInt(cantidadEquipo.value);
+            const tieneGarantia  = garantiaSi.checked;
+            const precio         = parseFloat(precioFinalEquipo.value.replace('$', ''));
             const especificaciones = document.getElementById('especificaciones_equipo').value || '-';
 
-            if (!tipoEquipoVal) {
-                alert('❌ Seleccione un tipo de equipo');
+            let duracionTexto = null;
+            if (tieneGarantia) {
+                const a = duracionEquipo.value;
+                duracionTexto = a === '1' ? '1 año de soporte'
+                    : a === '2' ? '2 años de soporte'
+                        : '3 años de soporte';
+            }
+
+            if (!tipoVal || !productoId || isNaN(cantidad) || cantidad < 1 || isNaN(precio)) {
+                alert('❌ Complete todos los campos requeridos');
                 return;
             }
 
-            if (!productoId) {
-                alert('❌ Seleccione un producto');
-                return;
+            const existe = carrito.find(item => item.idprod == productoId);
+            if (existe) {
+                existe.cantidad += cantidad;
+                existe.subtotal  = existe.cantidad * existe.precio;
+            } else {
+                carrito.push({
+                    idprod:            parseInt(productoId),
+                    tipo:              'Equipo',
+                    nombre:            productoNombre,
+                    categoria:         null,
+                    cantidad:          cantidad,
+                    precio:            precio,
+                    subtotal:          cantidad * precio,
+                    garantia:          tieneGarantia,
+                    duracion_garantia: duracionTexto,
+                    especificaciones:  especificaciones
+                });
             }
-
-            if (isNaN(cantidad) || cantidad < 1) {
-                alert('❌ Cantidad inválida');
-                return;
-            }
-
-            const subtotal = cantidad * precio;
-
-            carrito.push({
-                tipo: 'Equipo',
-                nombre: productoNombre,
-                categoria: null,
-                cantidad: cantidad,
-                precio: precio,
-                subtotal: subtotal,
-                garantia: tieneGarantia,
-                duracion_garantia: duracionTexto,
-                especificaciones: especificaciones
-            });
 
             calcularTotalGeneral();
             actualizarTabla();
             resetearFormularioEquipo();
-            alert(`✅ ${productoNombre} agregado al carrito`);
+            alert(`✅ ${productoNombre} agregado`);
         }
 
         function resetearFormularioEquipo() {
-            tipoEquipoSelect.value = '';
+            tipoEquipoSelect.value   = '';
             productoEquipo.innerHTML = '<option value="">Seleccione un tipo de equipo primero</option>';
-            productoEquipo.disabled = true;
-            cantidadEquipo.value = '1';
-            garantiaSi.checked = true;
+            productoEquipo.disabled  = true;
+            cantidadEquipo.value     = '1';
+            garantiaSi.checked       = true;
             duracionGroup.style.display = 'block';
-            duracionEquipo.value = '1';
-            precioBaseEquipo.value = '';
-            precioFinalEquipo.value = '$0.00';
-            totalEquipo.value = '$0.00';
+            duracionEquipo.value     = '1';
+            precioBaseEquipo.value   = '';
+            precioFinalEquipo.value  = '$0.00';
+            totalEquipo.value        = '$0.00';
             document.getElementById('especificaciones_equipo').value = '';
         }
 
-        // ==================== TABLA DEL CARRITO ====================
+        // ─────────────────────────────────────────────
+        // TABLA DEL CARRITO
+        // ─────────────────────────────────────────────
         function actualizarTabla() {
-            const tbody = document.getElementById('tabla_detalle');
+            const tbody        = document.getElementById('tabla_detalle');
             const contadorItems = document.getElementById('contador_items');
 
             if (carrito.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No hay productos agregados</td></tr>';
+                tbody.innerHTML    = '<tr><td colspan="5" class="text-center text-muted py-4">No hay productos agregados</td></tr>';
                 contadorItems.textContent = '0';
                 return;
             }
 
             let html = '';
             carrito.forEach((item, index) => {
-                let categoria = item.tipo === 'Periférico' ? (item.categoria || 'N/A') : 'N/A';
-                let garantia = item.tipo === 'Equipo' ? (item.garantia ? 'Sí' : 'No') : 'N/A';
-                let duracion = (item.tipo === 'Equipo' && item.garantia && item.duracion_garantia) ? item.duracion_garantia : 'N/A';
+                const garantia = item.tipo === 'Equipo'
+                    ? (item.garantia ? `✅ Sí<br><small>${item.duracion_garantia || ''}</small>` : '❌ No')
+                    : '<span class="text-na">N/A</span>';
 
                 html += `
-                <tr>
-                    <td><strong>${item.nombre}</strong><br><small class="text-muted">(${item.tipo})</small></td>
-                    <td class="${categoria === 'N/A' ? 'text-na' : ''}">${categoria}</td>
-                    <td>$${item.precio.toFixed(2)}</td>
-                    <td class="${garantia === 'N/A' ? 'text-na' : ''}">${garantia}</td>
-                    <td>$${item.subtotal.toFixed(2)}</td>
-                    <td><small>${item.especificaciones && item.especificaciones !== '-' ? (item.especificaciones.length > 30 ? item.especificaciones.substring(0, 30) + '...' : item.especificaciones) : '-'}</small></td>
-                    <td class="${duracion === 'N/A' ? 'text-na' : ''}">${duracion}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+                    <tr>
+                        <td>
+                            <strong>${item.nombre}</strong><br>
+                            <small class="text-muted">${item.tipo} | Cant: ${item.cantidad}</small>
+                        </td>
+                        <td>$${item.precio.toFixed(2)}</td>
+                        <td>${garantia}</td>
+                        <td><strong>$${item.subtotal.toFixed(2)}</strong></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})" title="Quitar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
             });
 
-            tbody.innerHTML = html;
+            tbody.innerHTML           = html;
             contadorItems.textContent = carrito.length;
         }
 
         function eliminarProducto(index) {
-            carrito.splice(index, 1);
-            calcularTotalGeneral();
-            actualizarTabla();
+            const nombre = carrito[index].nombre;
+            if (confirm(`¿Quitar "${nombre}" del carrito?`)) {
+                carrito.splice(index, 1);
+                calcularTotalGeneral();
+                actualizarTabla();
+            }
         }
 
         function calcularTotalGeneral() {
@@ -873,181 +908,226 @@
         }
 
         function cancelarVenta() {
+            if (esEdicion) {
+                if (confirm('¿Descartar cambios y volver al historial?')) {
+                    window.location.href = '{{ route("ventas.historial") }}';
+                }
+                return;
+            }
             if (carrito.length > 0 && confirm('¿Seguro que desea cancelar la venta actual?')) {
-                carrito = [];
-                totalVenta = 0;
+                carrito     = [];
+                totalVenta  = 0;
                 actualizarTabla();
                 calcularTotalGeneral();
             }
         }
 
-        function actualizarFolio() {
-            fetch('{{ route("ventas.nuevo-folio") }}')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('📝 Nuevo folio:', data.folio);
-                    const folioInput = document.getElementById('folio_actual');
-                    if (folioInput) {
-                        folioInput.value = data.folio;
-                    }
-                    // Actualizar en el header
-                    const folioSpan = document.querySelector('.empleado-info strong');
-                    if (folioSpan) {
-                        folioSpan.innerHTML = `No.Ticket: ${data.folio}`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al obtener nuevo folio:', error);
-                });
-        }
-
-
-
+        // ─────────────────────────────────────────────
+        // PROCESAR / GUARDAR VENTA
+        // ─────────────────────────────────────────────
         function procesarVenta(event) {
-            console.log('🔵 Procesando venta...');
-            console.log('Carrito:', carrito);
-            console.log('Total:', totalVenta);
-
             if (carrito.length === 0) {
                 alert('❌ Agregue al menos un producto');
                 return;
             }
 
-            const clienteNombre = document.getElementById('cliente_nombre').value.trim();
-            const folioInput = document.getElementById('folio_actual');
+            // ✅ Determinar URL y método según modo
+            const url    = esEdicion
+                ? `/ventas/${ventaId}`
+                : '{{ route("ventas.store") }}';
+            const method = esEdicion ? 'PUT' : 'POST';
 
             const ventaData = {
-                folio: folioInput ? folioInput.value : '{{ $nuevoFolio }}',
-                cliente_nombre: clienteNombre || 'Público en general',
-                cliente_rfc: document.getElementById('cliente_rfc').value,
-                cliente_telefono: document.getElementById('cliente_telefono').value,
-                productos: carrito.map(item => ({
-                    nombre: item.nombre,
-                    cantidad: item.cantidad,
-                    precio: item.precio,
-                    garantia: item.garantia || false,
+                folio:            document.getElementById('folio_actual').value,
+                cliente_nombre:   document.getElementById('cliente_nombre').value.trim() || 'Público en general',
+                cliente_rfc:      document.getElementById('cliente_rfc').value.trim(),
+                cliente_telefono: document.getElementById('cliente_telefono').value.trim(),
+                productos:        carrito.map(item => ({
+                    idprod:            item.idprod,
+                    nombre:            item.nombre,
+                    cantidad:          item.cantidad,
+                    precio:            item.precio,
+                    garantia:          item.garantia || false,
                     duracion_garantia: item.duracion_garantia || null,
-                    especificaciones: item.especificaciones || ''
+                    especificaciones:  item.especificaciones || ''
                 })),
                 total: totalVenta
             };
 
-            console.log('Datos a enviar:', ventaData);
+            console.log('📤 Enviando:', method, url, ventaData);
 
-            const btnProcesar = event.target;
-            const textoOriginal = btnProcesar.innerHTML;
-            btnProcesar.disabled = true;
-            btnProcesar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
+            const btn           = event.target;
+            const textoOriginal = btn.innerHTML;
+            btn.disabled        = true;
+            btn.innerHTML       = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
             document.getElementById('loading_overlay').style.display = 'flex';
 
-            fetch('{{ route("ventas.store") }}', {
-                method: 'POST',
+            fetch(url, {
+                method:  method,
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
+                    'Content-Type':  'application/json',
+                    'X-CSRF-TOKEN':  '{{ csrf_token() }}',
+                    'Accept':        'application/json'
                 },
                 body: JSON.stringify(ventaData)
             })
-                .then(response => {
-                    console.log('Respuesta status:', response.status);
-                    return response.json();
-                })
+                .then(r => r.json())
                 .then(data => {
-                    console.log('Respuesta data:', data);
                     document.getElementById('loading_overlay').style.display = 'none';
-                    btnProcesar.disabled = false;
-                    btnProcesar.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                    btn.innerHTML = textoOriginal;
 
                     if (data.success) {
-                        // Descargar PDF del ticket
-                        if (data.pdf_url) {
-                            window.open(data.pdf_url, '_blank');
+                        if (esEdicion) {
+                            alert(`✅ Venta #${data.folio} actualizada exitosamente`);
+                            window.location.href = '{{ route("ventas.historial") }}';
+                        } else {
+                            if (data.pdf_url) window.open(data.pdf_url, '_blank');
+                            alert(`✅ Venta #${data.folio} procesada exitosamente`);
+                            actualizarFolio();
+                            carrito    = [];
+                            totalVenta = 0;
+                            actualizarTabla();
+                            calcularTotalGeneral();
+                            document.getElementById('cliente_nombre').value   = '';
+                            document.getElementById('cliente_rfc').value      = '';
+                            document.getElementById('cliente_telefono').value = '';
+                            cargarHistorial();
                         }
-                        alert('✅ Venta #' + data.folio + ' registrada exitosamente');
-                        actualizarFolio();
-                        // Limpiar carrito
-                        carrito = [];
-                        totalVenta = 0;
-                        actualizarTabla();
-                        calcularTotalGeneral();
-                        // Limpiar cliente
-                        document.getElementById('cliente_nombre').value = '';
-                        document.getElementById('cliente_rfc').value = '';
-                        document.getElementById('cliente_telefono').value = '';
                     } else {
                         alert('❌ Error: ' + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Error en fetch:', error);
                     document.getElementById('loading_overlay').style.display = 'none';
-                    btnProcesar.disabled = false;
-                    btnProcesar.innerHTML = textoOriginal;
+                    btn.disabled  = false;
+                    btn.innerHTML = textoOriginal;
+                    console.error('Error:', error);
                     alert('❌ Error al procesar la venta: ' + error.message);
                 });
         }
 
-        // ==================== CARGAR HISTORIAL DE VENTAS DEL USUARIO ====================
+        function actualizarFolio() {
+            fetch('{{ route("ventas.nuevo-folio") }}')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('folio_actual').value = data.folio;
+                })
+                .catch(e => console.error('Error al obtener folio:', e));
+        }
+
+        // ─────────────────────────────────────────────
+        // ELIMINAR VENTA DEL HISTORIAL
+        // ─────────────────────────────────────────────
+        function eliminarVenta(ventaId) {
+            if (!confirm('¿Estás seguro de eliminar esta venta? Esta acción no se puede deshacer.')) return;
+
+            fetch(`/ventas/${ventaId}`, {
+                method:  'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept':       'application/json'
+                }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Venta eliminada exitosamente');
+                        cargarHistorial();
+                    } else {
+                        alert('❌ Error: ' + data.message);
+                    }
+                })
+                .catch(e => {
+                    console.error('Error:', e);
+                    alert('❌ Error al eliminar la venta');
+                });
+        }
+
+        // ─────────────────────────────────────────────
+        // HISTORIAL DEL USUARIO (AHORA SIEMPRE VISIBLE)
+        // ─────────────────────────────────────────────
         function cargarHistorial() {
-            console.log('🔵 Cargando historial...');
+            const tbody = document.getElementById('tabla_historial');
+            if (!tbody) return;
 
             fetch('{{ route("ventas.mis-ventas") }}')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
-                    const tbody = document.getElementById('tabla_historial');
                     const totalHistorial = document.getElementById('total_historial');
 
                     if (data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No hay ventas registradas</td></td>';
-                        totalHistorial.textContent = '0';
+                        tbody.innerHTML = '<td><td colspan="8" class="text-center text-muted py-4">No hay ventas registradas\n                                    </td>\n                                </table>';
+                        if (totalHistorial) totalHistorial.textContent = '0';
                         return;
                     }
 
                     let html = '';
                     data.forEach(venta => {
                         venta.detalles.forEach(detalle => {
-                            let categoria = detalle.item_type === 'producto' ? (detalle.producto?.categoria || 'N/A') : 'N/A';
-                            let garantia = detalle.garantia ? 'Sí' : 'No';
-                            let duracion = detalle.duracion_garantia || 'N/A';
+                            const categoria = detalle.item_type === 'producto'
+                                ? (detalle.producto?.categoria || 'N/A')
+                                : 'N/A';
+                            const garantia  = detalle.garantia ? 'Sí' : 'No';
+                            const duracion  = detalle.duracion_garantia || 'N/A';
+                            const espec     = detalle.especificaciones
+                                ? (detalle.especificaciones.length > 20
+                                    ? detalle.especificaciones.substring(0, 20) + '...'
+                                    : detalle.especificaciones)
+                                : '-';
 
                             html += `
-                        <tr>
-                            <td><strong>${detalle.producto?.nombre || 'Producto'}</strong><br><small class="text-muted">Folio: ${venta.folio}</small></td>
-                            <td>${categoria}</td>
-                            <td>$${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
-                            <td>${garantia}</td>
-                            <td>$${parseFloat(detalle.subtotal).toFixed(2)}</td>
-                            <td><small>${detalle.especificaciones ? (detalle.especificaciones.length > 20 ? detalle.especificaciones.substring(0, 20) + '...' : detalle.especificaciones) : '-'}</small></td>
-                            <td>${duracion}</td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <!-- Botón Ticket -->
-                                    <a href="{{ url('/ventas/ticket') }}/${venta.idventa}" class="btn btn-info btn-sm" target="_blank" title="Ver Ticket">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                    <!-- Botón Eliminar -->
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarVenta(${venta.idventa})" title="Eliminar Venta">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                                <tr>
+                                    <td>
+                                        <strong>${detalle.producto?.nombre || 'Producto'}</strong><br>
+                                        <small class="text-muted">Folio: ${venta.folio}</small>
+                                    </td>
+                                    <td>${categoria}</td>
+                                    <td>$${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
+                                    <td>${garantia}</td>
+                                    <td>$${parseFloat(detalle.subtotal).toFixed(2)}</td>
+                                    <td><small>${espec}</small></td>
+                                    <td>${duracion}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="/ventas/ticket/${venta.idventa}"
+                                               class="btn btn-info btn-sm" target="_blank" title="Ver Ticket">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            <a href="/ventas/${venta.idventa}/edit"
+                                               class="btn btn-warning btn-sm" title="Editar Venta">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    onclick="eliminarVenta(${venta.idventa})" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>`;
                         });
                     });
 
                     tbody.innerHTML = html;
-                    totalHistorial.textContent = data.length;
+                    if (totalHistorial) totalHistorial.textContent = data.length;
                 })
-                .catch(error => {
-                    console.error('Error al cargar historial:', error);
-                    document.getElementById('tabla_historial').innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar historial</td></tr>';
+                .catch(e => {
+                    console.error('Error al cargar historial:', e);
+                    if (tbody) tbody.innerHTML = '<td><td colspan="8" class="text-center text-danger">Error al cargar historial\n                                    </td>\n                                </tr>';
                 });
         }
 
-        // Cargar historial al iniciar la página
-        document.addEventListener('DOMContentLoaded', function() {
+        // ─────────────────────────────────────────────
+        // INICIALIZACIÓN
+        // ─────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            if (carrito.length > 0) {
+                actualizarTabla();
+                calcularTotalGeneral();
+            }
+
+            // Siempre cargar historial (ahora está visible en ambos modos)
             cargarHistorial();
         });
     </script>
